@@ -1,0 +1,11 @@
+Reprocessing Services
+nxclient nx.diamond.ac.uk
+
+To facilitate offsite reprocessing of data during/after beamtime and to provide access to diamond software installations, we have made available a number of machines with fast data access.
+
+The service is offered as a remote desktop service to one of the machines where clustering software will automatically direct you to the machine with least current load.
+
+To access the service please use an NX client (e.g. as available from www.nomachine.com) and from outside diamond direct the client to nx.diamnd.ac.uk, choose a new virtual desktop.
+
+Access to scientific software is through the 'module' system. Details on how to use module are available at the command line with "module help".
+
