@@ -8,3 +8,4 @@ An iterative self-absorption correction algorithm for 3D ptycho-fluorescence ima
 - [ ] Implement detector coverage angle
 - [ ] Optimise execution speed
 - [ ] Complete re-emission implementation
+- [ ] Noise removal by air region selection?
