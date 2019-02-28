@@ -6,53 +6,53 @@ import cv2
 import json
 from matplotlib.cm import coolwarm
 
- 
+
 #import TomopyReconstructionForVortexAbsorptionPt2506
 from TomopyReconstructionForFluorescenceTest import tomography
 
 
-  
+
 class material(object):
     def __init__(self, name,density):
         self.name=name
         self.density=density
-        print 'class defining material'
+        print('class defining material')
         #name =''
         keys=['material', 'massAbsCoef']
         self.myDictionary=dict(dict.fromkeys(keys, None))
-    
+
     #def setName(self,materialName):
     #    self.name=materialName
     def readName(self):
-        print 'material name:',self.name  
+        print('material name:',self.name)
     def setPathToProjections(self,path):
         self.pathToProjections=path
-        
+
 class processingTools():
     def __init__(self):
-        print 'defining tool'
-        
+        print('defining tool')
+
 class materialProjectionsTomo(object):
     def __init__(self, name,pathToProjection):
         self.name=name
-        print 'class defining material'
+        print('class defining material')
         #self.projections=pathToProjection
         self.path=pathToProjection
     def set_projection(self,projection):
-       
+
         self.projection=projection
     def set_materialTomo(self,tomo):    #self.tomo=np.zeros([angles,width,width])
         self.tomo=tomo
-    
- 
-            
+
+
+
 def AttenuationCorrection(listOfMaterials,pathToMerlinTomo,dataFolder,tomoCentre,minFluoSignal,projShift):
-    #print pathToNexusPt
-    
-    #mypathPt=h5py.File(pathToNexusPt,'r') 
-    #mypathCu=h5py.File(pathToNexusCu,'r') 
+    #print(pathToNexusPt)
+
+    #mypathPt=h5py.File(pathToNexusPt,'r')
+    #mypathCu=h5py.File(pathToNexusCu,'r')
     pixelSize=10.0e-4#cm
-    mypathMerlin=h5py.File(pathToMerlinTomo,'r') 
+    mypathMerlin=h5py.File(pathToMerlinTomo,'r')
     '''
     trasmission through a pixel calculated from the transmission measured with the  Merlin: the effective density of Pt is found
      to be 1g/cm^3, for Cu 0.8g/cm^3
@@ -61,24 +61,24 @@ def AttenuationCorrection(listOfMaterials,pathToMerlinTomo,dataFolder,tomoCentre
     #CuTransmThroughPt=0.9951
     #PtTransmThroughCu=0.995
     #PtTransmThroughPt=0.996
-    '''   
-    print 'looking for "',dataFolder, '" in the tree...'
+    '''
+    print('looking for "',dataFolder, '" in the tree...')
     contLoop=True
     pathTot=''
     contLoop, pathToData, pathTot=myRec(mypathPt,contLoop,pathTot,dataFolder)
 
-    print 'looking for "',dataFolder, '" in the tree...'
+    print('looking for "',dataFolder, '" in the tree...')
     contLoop2=True
     pathTot2=''
     contLoop2, pathToData2, pathTot2=myRec(mypathCu,contLoop2,pathTot2,dataFolder)
     '''
-    print 'looking for "',dataFolder, '" in the tree...'
+    print('looking for "',dataFolder, '" in the tree...')
     contLoop3=True
     pathTot3=''
     contLoop3, pathToData3, pathTot3=myRec(mypathMerlin,contLoop3,pathTot3,dataFolder)
     iterations=5
     if not (contLoop3):
-        print 'database "',dataFolder,'" found in  ', pathTot3
+        print('database "',dataFolder,'" found in  ', pathTot3)
         #npdataPt=np.array(mypathPt[str(pathTot)])
         #npdataCu=np.array(mypathCu[str(pathTot2)])
         projectionMerlin=mypathMerlin[str(pathTot3)]
@@ -86,51 +86,51 @@ def AttenuationCorrection(listOfMaterials,pathToMerlinTomo,dataFolder,tomoCentre
         #theta=tomopy.angles(180, 0, 25)
         tomoMerlin = tomography(pathToMerlinTomo,'data',12 ,0)
         tomoMerlin[0,1:25,:]=tomoMerlin[0,0:24,:]
-        print 'absorption tomo done', np.shape(tomoMerlin)
+        print('absorption tomo done', np.shape(tomoMerlin))
         plt.imshow(tomoMerlin[0,:,:])
         plt.show()
-        raw_input('press enter')
-        
-        print 'loading materials'
-        print len(listOfMaterials)
+        input('press enter')
+
+        print('loading materials')
+        print(len(listOfMaterials))
         materialsAnalysis=[]
-        print 'loading data...'
-        
+        print('loading data...')
+
         for i in range(len(listOfMaterials)):
-            print 'Im happy here'
+            print('Im happy here')
             name=listOfMaterials[i]
             temp=materialProjectionsTomo(listOfMaterials[i].name,listOfMaterials[i].pathToProjections)
             contLoop=True
             pathTot=''
-            print 'path to projections', listOfMaterials[i].pathToProjections
-            mypathTemp=h5py.File(temp.path,'r') 
+            print('path to projections', listOfMaterials[i].pathToProjections)
+            mypathTemp=h5py.File(temp.path,'r')
             contLoop, pathToData, pathTot=myRec(mypathTemp,contLoop,pathTot,dataFolder)
-            print contLoop
+            print(contLoop)
             try:
-                print np.shape(np.array(mypathTemp[str(pathTot)]))
+                print(np.shape(np.array(mypathTemp[str(pathTot)])))
                 temp.set_projection(np.array(mypathTemp[str(pathTot)]))
-                print 'set_projection'
-                #print 'just before ', temp.path,dataFolder,tomoCentre
-                
+                print('set_projection')
+                #print('just before ', temp.path,dataFolder,tomoCentre)
+
                 #temp.set_materialTomo(tomography(temp.path,dataFolder, tomoCentre))
-                #print 'tomography added'
+                #print('tomography added')
                 materialsAnalysis.append(temp)
-                print 'appended'
+                print('appended')
                 materialsAnalysis[i].set_materialTomo(tomography(materialsAnalysis[i].path,dataFolder, tomoCentre,1))
-                print materialsAnalysis[i].name, 'loaded and caluclated first tomography'
+                print(materialsAnalysis[i].name, 'loaded and caluclated first tomography')
                 plt.imshow(materialsAnalysis[i].tomo[0,:,:])
                 plt.show()
-                raw_input("Press Enter to continue...")   
+                input("Press Enter to continue...")
             except:
-                print dataFolder, listOfMaterials[i].pathToProjections, 'not found! closing uffa'
-            
-        #raw_input("Press Enter to continue...")       
+                print(dataFolder, listOfMaterials[i].pathToProjections, 'not found! closing uffa')
+
+        #input("Press Enter to continue...")
             #materialsAnalysis.append(materialProjectionsTomo())
             #materialsAnalysis=[]
         #npdataPt=np.array(mypathPt[str(pathTot)])
-            
-            
-        #raw_input("Press Enter to continue...")    
+
+
+        #input("Press Enter to continue...")
         '''
         STEP 1:
         do the tomography with the acquired sinograms
@@ -140,73 +140,73 @@ def AttenuationCorrection(listOfMaterials,pathToMerlinTomo,dataFolder,tomoCentre
         MaterialsCorrection = [None] * len(listOfMaterials)
         MaterialDensity = [None] * len(listOfMaterials)
         oscillation=np.zeros(iterations)
-        
+
         vortexImPtCorr=[None] * len(listOfMaterials)
         dsetImagePtCorr=[None] * len(listOfMaterials)
         dsetOscillation=[None] * len(listOfMaterials)
-        
+
         for nMat in range(len(listOfMaterials)):
                 nameTomoMaterial="/home/xfz42935/Documents/Fluorescence/Tomo"+listOfMaterials[nMat].name+"Test21082018V3.hdf"
                 #nameTomoPt="/dls/i13-1/data/2017/cm16785-1/processing/VortexTomo/vortexTomoPt2506.hdf"
                 #nameTomoCu="/dls/i13-1/data/2017/cm16785-1/processing/VortexTomo/vortexTomoCu2506.hdf"
-            
+
                 height=1
-                print nMat, np.shape(materialsAnalysis[nMat].projection)
+                print(nMat, np.shape(materialsAnalysis[nMat].projection))
                 #chepappa=np.zeros((25,1,25))
                 #chepappa[:,0,:]=materialsAnalysis[nMat].projection
-                print 'projection'
+                print('projection')
                 plt.imshow(materialsAnalysis[nMat].projection[:,0,:])
                 plt.show()
                 nAngles,height,width=np.shape(materialsAnalysis[nMat].projection)
                 vortexImPtCorr[nMat]=h5py.File(nameTomoMaterial,"w")
                 dsetImagePtCorr[nMat]=vortexImPtCorr[nMat].create_dataset('data', (iterations+1,height,width,width), 'f')
                 dsetOscillation[nMat]=vortexImPtCorr[nMat].create_dataset('oscillation', (iterations+1,), 'f')
-        
-        
-        
-        
-        
+
+
+
+
+
         while testIteration<iterations:
             if testIteration==0:
                 for nMat in range(len(listOfMaterials)):
                     dsetImagePtCorr[nMat][testIteration,:,:,:]=materialsAnalysis[nMat].tomo[:,:,:]
-                    print np.shape(materialsAnalysis[nMat].tomo[:,:,:])
+                    print(np.shape(materialsAnalysis[nMat].tomo[:,:,:]))
                     dsetOscillation[nMat][testIteration]=materialsAnalysis[nMat].tomo[0,12,12]
-                    print 'saved',  materialsAnalysis[nMat].tomo[0,12,8]
-                    
+                    print('saved',  materialsAnalysis[nMat].tomo[0,12,8])
+
             testIteration+=1
-            print 'iteration', testIteration
+            print('iteration', testIteration)
             npdataMerlin=np.array(tomoMerlin)
             #a,b,c=np.shape(npdataMerlin)
             nAngles=0
             height=0
             width=0
-            #print a,b,c, 'shape'
+            #print(a,b,c, 'shape')
             #SumTotTomo=np.zeros(np.shape(tomoMerlin))
             for nMat in range (len(listOfMaterials)):
-                #print nMat
-                
-                #print 'reconstruction done for ', materialsAnalysis[nMat].name
-                print np.shape(materialsAnalysis[nMat].tomo)
+                #print(nMat)
+
+                #print('reconstruction done for ', materialsAnalysis[nMat].name)
+                print(np.shape(materialsAnalysis[nMat].tomo))
                 #SumTotTomo+=materialsAnalysis[nMat].tomo
-                #print 'VALUE',materialsAnalysis[nMat].tomo[0,10,10]
+                #print('VALUE',materialsAnalysis[nMat].tomo[0,10,10])
                 plt.figure(1)
                 plt.imshow(materialsAnalysis[nMat].tomo[0,:,:],'Greys')
                 #plt.show()
                 #height=1
                 nAngles,height,width=np.shape(materialsAnalysis[nMat].projection)
                 NewMaterials[nMat]=np.zeros([nAngles,height,width])
-                
+
                 NewMaterials[nMat][:,:,0]=materialsAnalysis[nMat].projection[:,:,0]
-                #print nAngles,height,width, 'shape'
+                #print(nAngles,height,width, 'shape')
                 MaterialsCorrection[nMat]=np.ones((nAngles,height,width,width))
-            print 'tomography done, now Calculated Densities'    
-            print 'VALUE',materialsAnalysis[1].tomo[0,12,12]
+            print('tomography done, now Calculated Densities')
+            print('VALUE',materialsAnalysis[1].tomo[0,12,12])
             #oscillation[testIteration-1]=materialsAnalysis[1].tomo[1,25,68]
-            #raw_input("Press Enter to continue...") 
+            #input("Press Enter to continue...")
             materialRatio=[None]*len(listOfMaterials)
             materialEffectiveDensity=[None]*height
-            
+
             for heightIndex in range(height):
                 effDens=np.zeros([width,width,len(listOfMaterials)])
                 for firstIndex in range(width):
@@ -217,8 +217,8 @@ def AttenuationCorrection(listOfMaterials,pathToMerlinTomo,dataFolder,tomoCentre
                         densitynonZeroMat=1
                         pippo=0
                         countMat=0
-                        
-                        
+
+
                         '''
                         find a material if there is any at this scanning position
                         '''
@@ -226,13 +226,13 @@ def AttenuationCorrection(listOfMaterials,pathToMerlinTomo,dataFolder,tomoCentre
                             if materialsAnalysis[nonZerMat].tomo[heightIndex,firstIndex,secondIndex]>minFluoSignal:
                                 #
                                 if (firstIndex==12 and secondIndex==12):
-                                    print firstIndex,secondIndex, nonZerMat,'nonzeromat'
+                                    print(firstIndex,secondIndex, nonZerMat,'nonzeromat')
                                 break
-                        
-                        
+
+
                         for nMat in range (len(listOfMaterials)):
                             #effDensTemp=np.zeros([height,width,width])
-                            
+
                                 #materialRatio[nMat]=materialsAnalysis[nMat].tomo[heightIndex,firstIndex,secondIndex]/SumTotTomo[heightIndex,firstIndex,secondIndex]
                             '''
                             calculate the material ratio
@@ -256,37 +256,37 @@ def AttenuationCorrection(listOfMaterials,pathToMerlinTomo,dataFolder,tomoCentre
                                     materialRatio[nMat]=1
                             else:
                                 materialRatio[nMat]=0
-                                
+
                             '''
                             ******** I'm here
                             '''
-                            if materialRatio[nMat]>0:      
-                                pippo+=materialRatio[nMat]*listOfMaterials[nMat].myDictionary['Beam'] 
-                                countMat+=1  
+                            if materialRatio[nMat]>0:
+                                pippo+=materialRatio[nMat]*listOfMaterials[nMat].myDictionary['Beam']
+                                countMat+=1
                             #else:
-                                
+
                         '''
                         calculate density of the non zero material
-                        ''' 
+                        '''
                         if pippo>0:
-                            
-                            #print 'absorption value  ',npdataMerlin[heightIndex,firstIndex,secondIndex]
+
+                            #print('absorption value  ',npdataMerlin[heightIndex,firstIndex,secondIndex])
                             densitynonZeroMat=npdataMerlin[heightIndex,firstIndex,secondIndex]/ (pippo *pixelSize)
                             if (firstIndex==12 and secondIndex==12):
-                                print 'density non zero mat', densitynonZeroMat, pippo,listOfMaterials[nonZerMat].myDictionary['Beam'],nonZerMat,materialRatio[1]
-                                print 'absorption value  ',npdataMerlin[heightIndex,firstIndex,secondIndex]
+                                print('density non zero mat', densitynonZeroMat, pippo,listOfMaterials[nonZerMat].myDictionary['Beam'],nonZerMat,materialRatio[1])
+                                print('absorption value  ',npdataMerlin[heightIndex,firstIndex,secondIndex])
                         else:
                             densitynonZeroMat=0
                         '''
                         calculate the density for all the other materials
                         '''
-                        
-                        
+
+
                         for nMat in range (len(listOfMaterials)):
                             effDens[firstIndex,secondIndex,nMat]=densitynonZeroMat*materialRatio[nMat]
                             if (firstIndex==12 and secondIndex==12):
-                                print  effDens[firstIndex,secondIndex,nMat], nMat
-                            
+                                print( effDens[firstIndex,secondIndex,nMat], nMat)
+
                 materialEffectiveDensity[heightIndex]=effDens
             plt.figure(100)
             plt.imshow(materialEffectiveDensity[0][:,:,0])
@@ -297,24 +297,24 @@ def AttenuationCorrection(listOfMaterials,pathToMerlinTomo,dataFolder,tomoCentre
             plt.colorbar()
             plt.clim(0, 0.5);
             plt.show()
-                
+
             MaterialCorrection=np.ones((len(listOfMaterials),nAngles,height,width,width))
-             
-            print 'doing correction'
+
+            print('doing correction')
             shift=projShift
             minimum=0.002
             maximum=0.05
-            
-            
+
+
             generalDensity=0
             '''
             this shift is due to the centre of rotation, the centre of rotation is 23, the centre of the reconstruction is 43,
              so I need to shift 20 pixels to have the profile coincide '''
             xplot=np.linspace(0, width-1,width)
             for i in range(0,nAngles):
-                #print 'angle', i
+                #print('angle', i)
                 for k in range(height):
-                    #print 'slice',k
+                    #print('slice',k)
                     '''
                     rotating absorption
                     '''
@@ -324,7 +324,7 @@ def AttenuationCorrection(listOfMaterials,pathToMerlinTomo,dataFolder,tomoCentre
                     dstShifted=np.zeros((width,width))
                     dstShifted[0:width-1-shift,:]=dst[shift:width-1,:]
                     binaryMask=np.zeros((width,width))
-                    
+
                     MaterialSlice=[None]*len(listOfMaterials)
                     dstShiftedMaterial=[None]*len(listOfMaterials)
                     shiftedMaterialDensity=[None]*len(listOfMaterials)
@@ -332,7 +332,7 @@ def AttenuationCorrection(listOfMaterials,pathToMerlinTomo,dataFolder,tomoCentre
                     '''
                     rotating fluorescence and density
                     '''
-                    
+
                     for nMat in range(len(listOfMaterials)):
 
                         '''
@@ -350,14 +350,14 @@ def AttenuationCorrection(listOfMaterials,pathToMerlinTomo,dataFolder,tomoCentre
                         shift material density
                         '''
                         shiftedMaterialDensity[nMat][0:width-1-shift,:]=cv2.warpAffine(materialEffectiveDensity[k][:,:,nMat],M,(width,width))[shift:width-1,:]
-                        #print ' density',nMat, materialEffectiveDensity[k][12,8,nMat]
+                        #print(' density',nMat, materialEffectiveDensity[k][12,8,nMat])
                         #plt.imshow(materialEffectiveDensity[k][:,:,nMat])
                         #plt.show()
                         #shiftedMaterialDensity[nMat]=cv2.warpAffine(materialEffectiveDensity[k][:,:,nMat],M,(width,width))
 
-                    #print 'creating masks...'
+                    #print('creating masks...')
                     for kk in range(width):
-                        
+
                         for ll in range(width):
                             if (dstShifted[kk,ll]>minimum) and (dstShifted[kk,ll]<maximum):
                                 binaryMask[kk,ll]=1
@@ -365,26 +365,26 @@ def AttenuationCorrection(listOfMaterials,pathToMerlinTomo,dataFolder,tomoCentre
                                 minFluoSignal=np.average(np.average(materialsAnalysis[nMat].tomo[0,0:5,0:5]))
                                 if (dstShiftedMaterial[nMat][kk,ll]>minFluoSignal):
                                     binaryMaskMaterial[nMat][kk,ll]=1
-                                
+
                     '''
-                    print nMat, 'material'
+                    print(nMat, 'material')
                     plt.imshow(binaryMaskMaterial[0][:,:])
                     plt.show()
                     plt.imshow(binaryMaskMaterial[1][:,:])
                     plt.show()
                     '''
                     for j in range(0,width):
-                        
+
                         for ll in range(0,j-1):
                             '''
                             correct the new mask for my mask
                             For Cu first and Pt then
                             '''
-                            
+
                             averageDensityMaterial=np.zeros(len(listOfMaterials))
-                           
+
                             for nMat in range(len(listOfMaterials)):
-                                
+
                                 '''
                                 profllMaterial thickness in pixel of the material at ll
                                 '''
@@ -392,7 +392,7 @@ def AttenuationCorrection(listOfMaterials,pathToMerlinTomo,dataFolder,tomoCentre
                                 correction=1
                                 nMat2=0
                                 for nMat2 in range(len(listOfMaterials)):
-                                    
+
                                     profllDensMaterial=shiftedMaterialDensity[nMat2][ll,:]*binaryMaskMaterial[nMat][j,:]
                                     profThickMaterial= np.sum(profllMaterial)
                                     profDensMaterial=np.sum(profllDensMaterial)
@@ -401,14 +401,14 @@ def AttenuationCorrection(listOfMaterials,pathToMerlinTomo,dataFolder,tomoCentre
                                     else:
                                         averageDensityMaterial[nMat2]=0
                                     correction=correction*math.exp(-averageDensityMaterial[nMat2]*listOfMaterials[nMat2].myDictionary[listOfMaterials[nMat].name]*pixelSize)
-                                    
+
                                 MaterialCorrection[nMat,i,k,j,ll]=correction
 
                         NewCorrectionMaterial=np.ones(len(listOfMaterials))
 
-                        for lll in range(j):  
+                        for lll in range(j):
                             for nMat in range (len(listOfMaterials)):
-                                NewCorrectionMaterial[nMat]*=MaterialCorrection[nMat,i,k,j,lll] 
+                                NewCorrectionMaterial[nMat]*=MaterialCorrection[nMat,i,k,j,lll]
                         '''
                         here forrect the projection for the attenuationt
                         '''
@@ -419,8 +419,8 @@ def AttenuationCorrection(listOfMaterials,pathToMerlinTomo,dataFolder,tomoCentre
                             if nMat==1:
                                 NewMaterials[0][i,k,j]=NewMaterials[0][i,k,j]-(NewMaterials[nMat][i,k,j]-materialsAnalysis[nMat].projection[i,k,j])
 
-            print 'all done, writing file for each material....'
-            
+            print('all done, writing file for each material....')
+
             tomoNew=[None]*len(listOfMaterials)
             for nMat in range(len(listOfMaterials)):
                 nameMat="/home/xfz42935/Documents/Fluorescence/testProjections"+listOfMaterials[nMat].name+"21082018V3.hdf"
@@ -430,11 +430,11 @@ def AttenuationCorrection(listOfMaterials,pathToMerlinTomo,dataFolder,tomoCentre
                 vortexImPt.close()
                 listOfMaterials[nMat].path=nameMat
                 #listOfMaterials[nMat].setPathToProjections(nameMat)
-                print 'processing the new tomography'
+                print('processing the new tomography')
                 tomoNew[nMat]=tomography(nameMat, 'data',tomoCentre,1 )
                 plt.figure(1)
                 plt.imshow(materialsAnalysis[nMat].tomo[0,:,:])
-        
+
                 plt.figure(2)
                 plt.imshow(tomoNew[nMat][0,:,:])
                 materialsAnalysis[nMat].set_materialTomo(tomoNew[nMat])
@@ -442,15 +442,15 @@ def AttenuationCorrection(listOfMaterials,pathToMerlinTomo,dataFolder,tomoCentre
                 dsetOscillation[nMat][testIteration]=materialsAnalysis[nMat].tomo[0,12,8]
         for nMat in range(len(listOfMaterials)):
             vortexImPtCorr[nMat].close()
-        
+
     else:
-        print 'database "', dataFolder,'" not found!'
+        print('database "', dataFolder,'" not found!')
 
-    print 'all done, all closed'
+    print('all done, all closed')
 
 
-      
-def myRec(obj,continueLoop,pathTot,dataFolder):  
+
+def myRec(obj,continueLoop,pathTot,dataFolder):
     ### recursive function to look for the data database
     temp=None
     i=1
@@ -477,75 +477,75 @@ def myRec(obj,continueLoop,pathTot,dataFolder):
     pathTot=pathTot+tempPath
     return continueLoop,temp, pathTot
 
-    
-   
+
+
 #########For testing function
 if __name__ == "__main__":
-    
+
     materialName="/home/xfz42935/Documents/Fluorescence/DensitiesForTest.json"
     with open(materialName) as json_data_file:
         data = json.load(json_data_file)
-        print data
-        print data["materials"]["name"][0],len(data["materials"]["name"])
-    raw_input('Press enter to continue...')
+        print(data)
+        print(data["materials"]["name"][0],len(data["materials"]["name"]))
+    input('Press enter to continue...')
     '''
     numbOfMaterials=2
-    
-    
+
+
     namePt="/dls/i13-1/data/2017/cm16785-1/processing/VortexTomo/vortexProjectionsPtDriftCorrection2702.hdf"
     nameCu="/dls/i13-1/data/2017/cm16785-1/processing/VortexTomo/vortexProjectionsCuDriftCorrection2702.hdf"
-    
+
     massAttcoeffCu118=164.83
     massAttcoeffPt118=185.2#184.0857#134.3#
-    
+
     massAttcoeffCu944=250.18#127.08#252.5462#241.8#
     massAttcoeffPt944=137.14#130.3238#288.16#
-    
+
     massAttcoeffCu804=50.028
     massAttcoeffPt804=190.3#197.5128#321.4#
     '''
-    
-    
+
+
     listOfMaterials = []
     for i in range(len(data["materials"]["name"])):
         listOfMaterials.append(material(data["materials"]["name"][i],data["materials"]["density"][i]))
         listOfMaterials[i].setPathToProjections(data["materials"]["path"][i])
-        print listOfMaterials[i].name,listOfMaterials[i].density, listOfMaterials[i].pathToProjections
-    raw_input('Press enter to continue...')
-    print 'loading mass attenuation coefficients...'
-    
+        print(listOfMaterials[i].name,listOfMaterials[i].density, listOfMaterials[i].pathToProjections)
+    input('Press enter to continue...')
+    print('loading mass attenuation coefficients...')
+
     massAttenuationCoefficients="/home/xfz42935/Documents/Fluorescence/FluorescenceTestParameterFile.json"
     with open(massAttenuationCoefficients) as json_data_file:
         data2 = json.load(json_data_file)
-        #print data2
+        #print(data2)
         for i in range(len(data["materials"]["name"])):
-            print 'setting up mass absorption coefficient for ', listOfMaterials[i].name
-            
+            print('setting up mass absorption coefficient for ', listOfMaterials[i].name)
+
             for j in range(len(data["materials"]["name"])):
-                #print 'mass absorption For ', listOfMaterials[j].name, 'is', data2[listOfMaterials[i].name][listOfMaterials[j].name]
+                #print('mass absorption For ', listOfMaterials[j].name, 'is', data2[listOfMaterials[i].name][listOfMaterials[j].name])
                 listOfMaterials[i].myDictionary[listOfMaterials[j].name]=data2[listOfMaterials[i].name][listOfMaterials[j].name]
             listOfMaterials[i].myDictionary["Beam"]=data2[listOfMaterials[i].name]["Beam"]
-            print  'here'
-            print 'my dictionary', listOfMaterials[i].myDictionary,  i
-        print 'my dictionary', listOfMaterials[0].myDictionary
-    print 'my dictionary', listOfMaterials[0].myDictionary["Beam"],listOfMaterials[0].myDictionary["Pt"],listOfMaterials[0].myDictionary["Cu"]
-    print 'my dictionary', listOfMaterials[1].myDictionary["Beam"],listOfMaterials[1].myDictionary["Pt"],listOfMaterials[1].myDictionary["Cu"]
-    raw_input('finished loading material properties: Press enter to continue...')
+            print('here')
+            print('my dictionary', listOfMaterials[i].myDictionary,  i)
+        print('my dictionary', listOfMaterials[0].myDictionary)
+    print('my dictionary', listOfMaterials[0].myDictionary["Beam"],listOfMaterials[0].myDictionary["Pt"],listOfMaterials[0].myDictionary["Cu"])
+    print('my dictionary', listOfMaterials[1].myDictionary["Beam"],listOfMaterials[1].myDictionary["Pt"],listOfMaterials[1].myDictionary["Cu"])
+    input('finished loading material properties: Press enter to continue...')
 
     width=25
     height=1
     depthProjections=25
     tomoCentre=13
     #name="/home/xfz42935/Documents/Vortex/Merlin/merlinProjections.hdf"
-    
+
     #name="/dls/i13-1/data/2017/cm16785-1/processing/VortexTomo/vortexProjectionsPtAttenuation.hdf"
     nameMerlinTomo="/home/xfz42935/Documents/Fluorescence/Absorption.hdf"
 
     #name="/dls/i13-1/data/2017/cm16785-1/processing/VortexTomo/vortexProjectionsPtAttenuation.hdf"
     #vortexIm=h5py.File(name,"w")
     #dsetImage=vortexIm.create_dataset('data', (depthProjections,height,width), 'f')
-    #print dsetImage.shape
-    #print dsetImage.dtype
+    #print(dsetImage.shape)
+    #print(dsetImage.dtype)
     #count=0
     #imageVortex=np.zeros(((depthProjections,height,width)))
     #myMax=0
