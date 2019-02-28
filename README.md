@@ -2,7 +2,7 @@
 An iterative self-absorption correction algorithm for 3D ptycho-fluorescence imaging
 
 ##### TODO
-- [ ] Remove hard coded file paths
+- [x] Remove hard coded file paths
 - [ ] Simplify (single json parameter file)
 - [ ] Create database for elements
 - [ ] Implement detector coverage angle
