@@ -146,7 +146,7 @@ def AttenuationCorrection(listOfMaterials,pathToMerlinTomo,dataFolder,tomoCentre
         dsetOscillation=[None] * len(listOfMaterials)
 
         for nMat in range(len(listOfMaterials)):
-                nameTomoMaterial="/home/xfz42935/Documents/Fluorescence/Tomo"+listOfMaterials[nMat].name+"Test21082018V3.hdf"
+                nameTomoMaterial=listOfMaterials[nMat].name+"Test21082018V3.hdf"
                 #nameTomoPt="/dls/i13-1/data/2017/cm16785-1/processing/VortexTomo/vortexTomoPt2506.hdf"
                 #nameTomoCu="/dls/i13-1/data/2017/cm16785-1/processing/VortexTomo/vortexTomoCu2506.hdf"
 
@@ -423,7 +423,7 @@ def AttenuationCorrection(listOfMaterials,pathToMerlinTomo,dataFolder,tomoCentre
 
             tomoNew=[None]*len(listOfMaterials)
             for nMat in range(len(listOfMaterials)):
-                nameMat="/home/xfz42935/Documents/Fluorescence/testProjections"+listOfMaterials[nMat].name+"21082018V3.hdf"
+                nameMat="testProjections"+listOfMaterials[nMat].name+"21082018V3.hdf"
                 vortexImPt=h5py.File(nameMat,"w")
                 dsetImagePt=vortexImPt.create_dataset('data', (nAngles,height,width), 'f')
                 dsetImagePt[...]=NewMaterials[nMat]#/myMax
@@ -482,7 +482,8 @@ def myRec(obj,continueLoop,pathTot,dataFolder):
 #########For testing function
 if __name__ == "__main__":
 
-    materialName="/home/xfz42935/Documents/Fluorescence/DensitiesForTest.json"
+    materialName="DensitiesForTest.json"
+
     with open(materialName) as json_data_file:
         data = json.load(json_data_file)
         print(data)
@@ -514,7 +515,8 @@ if __name__ == "__main__":
     input('Press enter to continue...')
     print('loading mass attenuation coefficients...')
 
-    massAttenuationCoefficients="/home/xfz42935/Documents/Fluorescence/FluorescenceTestParameterFile.json"
+    massAttenuationCoefficients="FluorescenceTestParameterFile.json"
+
     with open(massAttenuationCoefficients) as json_data_file:
         data2 = json.load(json_data_file)
         #print(data2)
@@ -539,7 +541,7 @@ if __name__ == "__main__":
     #name="/home/xfz42935/Documents/Vortex/Merlin/merlinProjections.hdf"
 
     #name="/dls/i13-1/data/2017/cm16785-1/processing/VortexTomo/vortexProjectionsPtAttenuation.hdf"
-    nameMerlinTomo="/home/xfz42935/Documents/Fluorescence/Absorption.hdf"
+    nameMerlinTomo="Absorption.hdf"
 
     #name="/dls/i13-1/data/2017/cm16785-1/processing/VortexTomo/vortexProjectionsPtAttenuation.hdf"
     #vortexIm=h5py.File(name,"w")
