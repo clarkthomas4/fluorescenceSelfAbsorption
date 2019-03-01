@@ -39,7 +39,6 @@ class materialProjectionsTomo(object):
         #self.projections=pathToProjection
         self.path=pathToProjection
     def set_projection(self,projection):
-
         self.projection=projection
     def set_materialTomo(self,tomo):    #self.tomo=np.zeros([angles,width,width])
         self.tomo=tomo
@@ -224,7 +223,6 @@ def AttenuationCorrection(listOfMaterials,pathToMerlinTomo,dataFolder,tomoCentre
                         '''
                         for nonZerMat in range (len(listOfMaterials)):
                             if materialsAnalysis[nonZerMat].tomo[heightIndex,firstIndex,secondIndex]>minFluoSignal:
-                                #
                                 if (firstIndex==12 and secondIndex==12):
                                     print(firstIndex,secondIndex, nonZerMat,'nonzeromat')
                                 break
@@ -280,7 +278,6 @@ def AttenuationCorrection(listOfMaterials,pathToMerlinTomo,dataFolder,tomoCentre
                         '''
                         calculate the density for all the other materials
                         '''
-
 
                         for nMat in range (len(listOfMaterials)):
                             effDens[firstIndex,secondIndex,nMat]=densitynonZeroMat*materialRatio[nMat]
