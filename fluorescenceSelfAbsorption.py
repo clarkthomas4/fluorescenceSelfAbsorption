@@ -8,7 +8,7 @@ from matplotlib.cm import coolwarm
 
 
 #import TomopyReconstructionForVortexAbsorptionPt2506
-from TomopyReconstructionForFluorescenceTest import tomography
+from TomopyReconstructionForFluorescenceTest import tomography, myRec
 
 
 
@@ -449,7 +449,7 @@ def AttenuationCorrection(listOfMaterials,pathToMerlinTomo,dataFolder,tomoCentre
     print('all done, all closed')
 
 
-
+'''
 def myRec(obj,continueLoop,pathTot,dataFolder):
     ### recursive function to look for the data database
     temp=None
@@ -476,7 +476,7 @@ def myRec(obj,continueLoop,pathTot,dataFolder):
             tempPath=''
     pathTot=pathTot+tempPath
     return continueLoop,temp, pathTot
-
+'''
 
 
 #########For testing function
