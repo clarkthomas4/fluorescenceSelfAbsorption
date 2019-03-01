@@ -7,6 +7,12 @@ import json
 from matplotlib.cm import coolwarm
 
 
+#Solve python2/3 (raw_)input compatibility issue
+try:
+	input = raw_input
+except NameError:
+	pass
+
 #import TomopyReconstructionForVortexAbsorptionPt2506
 from TomopyReconstructionForFluorescenceTest import tomography, myRec
 
@@ -88,7 +94,7 @@ def AttenuationCorrection(listOfMaterials,pathToMerlinTomo,dataFolder,tomoCentre
         print('absorption tomo done', np.shape(tomoMerlin))
         plt.imshow(tomoMerlin[0,:,:])
         plt.show()
-        raw_input('press enter')
+        input('press enter')
 
         print('loading materials')
         print(len(listOfMaterials))
@@ -119,17 +125,17 @@ def AttenuationCorrection(listOfMaterials,pathToMerlinTomo,dataFolder,tomoCentre
                 print(materialsAnalysis[i].name, 'loaded and caluclated first tomography')
                 plt.imshow(materialsAnalysis[i].tomo[0,:,:])
                 plt.show()
-                raw_input("Press Enter to continue...")
+                input("Press Enter to continue...")
             except:
                 print(dataFolder, listOfMaterials[i].pathToProjections, 'not found! closing uffa')
 
-        #raw_input("Press Enter to continue...")
+        #input("Press Enter to continue...")
             #materialsAnalysis.append(materialProjectionsTomo())
             #materialsAnalysis=[]
         #npdataPt=np.array(mypathPt[str(pathTot)])
 
 
-        #raw_input("Press Enter to continue...")
+        #input("Press Enter to continue...")
         '''
         STEP 1:
         do the tomography with the acquired sinograms
@@ -202,7 +208,7 @@ def AttenuationCorrection(listOfMaterials,pathToMerlinTomo,dataFolder,tomoCentre
             print('tomography done, now Calculated Densities')
             print('VALUE',materialsAnalysis[1].tomo[0,12,12])
             #oscillation[testIteration-1]=materialsAnalysis[1].tomo[1,25,68]
-            #raw_input("Press Enter to continue...")
+            #input("Press Enter to continue...")
             materialRatio=[None]*len(listOfMaterials)
             materialEffectiveDensity=[None]*height
 
@@ -445,37 +451,6 @@ def AttenuationCorrection(listOfMaterials,pathToMerlinTomo,dataFolder,tomoCentre
 
     print('all done, all closed')
 
-
-'''
-def myRec(obj,continueLoop,pathTot,dataFolder):
-    ### recursive function to look for the data database
-    temp=None
-    i=1
-    tempPath=''
-    for name, value in obj.items():
-        if continueLoop:
-            #check if the object is a group
-            if isinstance(obj[name], h5py.Group):
-                tempPath='/'+name
-                if len(obj[name])>0:
-                    continueLoop,temp,tempPath= myRec(obj[name],continueLoop,tempPath,dataFolder)
-                else:
-                    continue
-            else:
-                test=obj[name]
-                temp1='/'+dataFolder
-                if temp1 in test.name:
-                    continueLoop=False
-                    tempPath=pathTot+'/'+name
-                    return continueLoop,test.name,tempPath
-            i=i+1
-        if (i-1)>len(obj.items()):
-            tempPath=''
-    pathTot=pathTot+tempPath
-    return continueLoop,temp, pathTot
-'''
-
-
 #########For testing function
 if __name__ == "__main__":
 
@@ -485,7 +460,7 @@ if __name__ == "__main__":
         data = json.load(json_data_file)
         print(data)
         print(data["materials"]["name"][0],len(data["materials"]["name"]))
-    raw_input('Press enter to continue...')
+    input('Press enter to continue...')
     '''
     numbOfMaterials=2
 
@@ -509,7 +484,7 @@ if __name__ == "__main__":
         listOfMaterials.append(material(data["materials"]["name"][i],data["materials"]["density"][i]))
         listOfMaterials[i].setPathToProjections(data["materials"]["path"][i])
         print(listOfMaterials[i].name,listOfMaterials[i].density, listOfMaterials[i].pathToProjections)
-    raw_input('Press enter to continue...')
+    input('Press enter to continue...')
     print('loading mass attenuation coefficients...')
 
     massAttenuationCoefficients="FluorescenceTestParameterFile.json"
@@ -529,7 +504,7 @@ if __name__ == "__main__":
         print('my dictionary', listOfMaterials[0].myDictionary)
     print('my dictionary', listOfMaterials[0].myDictionary["Beam"],listOfMaterials[0].myDictionary["Pt"],listOfMaterials[0].myDictionary["Cu"])
     print('my dictionary', listOfMaterials[1].myDictionary["Beam"],listOfMaterials[1].myDictionary["Pt"],listOfMaterials[1].myDictionary["Cu"])
-    raw_input('finished loading material properties: Press enter to continue...')
+    input('finished loading material properties: Press enter to continue...')
 
     width=25
     height=1

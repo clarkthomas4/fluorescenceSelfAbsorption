@@ -7,8 +7,14 @@ import json
 from matplotlib.cm import coolwarm
 
 
+#Solve python2/3 (raw_)input compatability issue
+try:
+	input = raw_input
+except NameError:
+	pass
+
 #import TomopyReconstructionForVortexAbsorptionPt2506
-from TomopyReconstructionForFluorescenceTest import tomography
+from TomopyReconstructionForFluorescenceTest import tomography, myRec
 
 
 
@@ -39,7 +45,6 @@ class materialProjectionsTomo(object):
         #self.projections=pathToProjection
         self.path=pathToProjection
     def set_projection(self,projection):
-
         self.projection=projection
     def set_materialTomo(self,tomo):    #self.tomo=np.zeros([angles,width,width])
         self.tomo=tomo
@@ -89,7 +94,7 @@ def AttenuationCorrection(listOfMaterials,pathToMerlinTomo,dataFolder,tomoCentre
         print('absorption tomo done', np.shape(tomoMerlin))
         plt.imshow(tomoMerlin[0,:,:])
         plt.show()
-        raw_input('press enter')
+        input('press enter')
 
         print('loading materials')
         print(len(listOfMaterials))
@@ -224,7 +229,6 @@ def AttenuationCorrection(listOfMaterials,pathToMerlinTomo,dataFolder,tomoCentre
                         '''
                         for nonZerMat in range (len(listOfMaterials)):
                             if materialsAnalysis[nonZerMat].tomo[heightIndex,firstIndex,secondIndex]>minFluoSignal:
-                                #
                                 if (firstIndex==12 and secondIndex==12):
                                     print(firstIndex,secondIndex, nonZerMat,'nonzeromat')
                                 break
@@ -280,7 +284,6 @@ def AttenuationCorrection(listOfMaterials,pathToMerlinTomo,dataFolder,tomoCentre
                         '''
                         calculate the density for all the other materials
                         '''
-
 
                         for nMat in range (len(listOfMaterials)):
                             effDens[firstIndex,secondIndex,nMat]=densitynonZeroMat*materialRatio[nMat]
@@ -447,37 +450,6 @@ def AttenuationCorrection(listOfMaterials,pathToMerlinTomo,dataFolder,tomoCentre
         print('database "', dataFolder,'" not found!')
 
     print('all done, all closed')
-
-
-
-def myRec(obj,continueLoop,pathTot,dataFolder):
-    ### recursive function to look for the data database
-    temp=None
-    i=1
-    tempPath=''
-    for name, value in obj.items():
-        if continueLoop:
-            #check if the object is a group
-            if isinstance(obj[name], h5py.Group):
-                tempPath='/'+name
-                if len(obj[name])>0:
-                    continueLoop,temp,tempPath= myRec(obj[name],continueLoop,tempPath,dataFolder)
-                else:
-                    continue
-            else:
-                test=obj[name]
-                temp1='/'+dataFolder
-                if temp1 in test.name:
-                    continueLoop=False
-                    tempPath=pathTot+'/'+name
-                    return continueLoop,test.name,tempPath
-            i=i+1
-        if (i-1)>len(obj.items()):
-            tempPath=''
-    pathTot=pathTot+tempPath
-    return continueLoop,temp, pathTot
-
-
 
 #########For testing function
 if __name__ == "__main__":

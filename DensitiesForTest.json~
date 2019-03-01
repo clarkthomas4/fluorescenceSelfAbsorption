@@ -1,0 +1,13 @@
+{
+	"materials":{
+		"name":["Cu", "Pt"],
+		"density":[8.96,21.45],
+		"path":["Cu21082018.hdf","Pt21082018.hdf"]
+	},
+	"outputFolder":{
+		"path":"/home/xfz42935/Documents/Fluorescence/"
+	},
+	"absorptionTomo":{
+		"path":"/home/xfz42935/Documents/Fluorescence/Absorption.hdf"
+	}
+}
