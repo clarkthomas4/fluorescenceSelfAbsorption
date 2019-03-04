@@ -2,12 +2,20 @@
 	"materials":{
 		"name":["Cu", "Pt"],
 		"density":[8.96,21.45],
-		"path":["Cu21082018.hdf","Pt21082018.hdf"]
+		"path":["data/Cu21082018.hdf","data/Pt21082018.hdf"]
 	},
 	"outputFolder":{
-		"path":"/home/xfz42935/Documents/Fluorescence/"
+		"path":"data/output/"
 	},
 	"absorptionTomo":{
-		"path":"Absorption.hdf"
-	}
+		"path":"data/Absorption.hdf"
+	},
+    "scanParameters":{
+        "width":25,
+        "height":1,
+        "depthProjections":25,
+        "tomoCentre":13,
+        "minFluoSignal":10,
+        "projShift":1
+    }
 }

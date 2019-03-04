@@ -53,7 +53,7 @@ class materialProjectionsTomo(object):
 
 
 def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
-                          tomoCentre, minFluoSignal, projShift):
+                          tomoCentre, minFluoSignal, projShift, outDir):
     # print(pathToNexusPt)
 
     # mypathPt=h5py.File(pathToNexusPt,'r')
@@ -99,7 +99,7 @@ def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
         print('absorption tomo done', np.shape(tomoMerlin))
         plt.imshow(tomoMerlin[0, :, :])
         plt.show()
-        input('press enter')
+        input('Press Enter to continue...')
 
         print('loading materials')
         print(len(listOfMaterials))
@@ -162,7 +162,7 @@ def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
         dsetOscillation = [None] * len(listOfMaterials)
 
         for nMat in range(len(listOfMaterials)):
-                nameTomoMaterial = listOfMaterials[nMat].name \
+                nameTomoMaterial = outDir + listOfMaterials[nMat].name \
                                    + "Test21082018V3.hdf"
                 # nameTomoPt="/dls/i13-1/data/2017/cm16785-1/processing/VortexTomo/vortexTomoPt2506.hdf"
                 # nameTomoCu="/dls/i13-1/data/2017/cm16785-1/processing/VortexTomo/vortexTomoCu2506.hdf"
@@ -482,7 +482,7 @@ def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
                                 NewCorrectionMaterial[nMat] *=\
                                     MaterialCorrection[nMat, i, k, j, lll]
                         '''
-                        here forrect the projection for the attenuationt
+                        here correct the projection for the attenuation
                         '''
                         for nMat in range(len(listOfMaterials)):
 
@@ -501,7 +501,7 @@ def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
 
             tomoNew = [None]*len(listOfMaterials)
             for nMat in range(len(listOfMaterials)):
-                nameMat = "testProjections"\
+                nameMat = outDir + "testProjections"\
                            + listOfMaterials[nMat].name\
                            + "21082018V3.hdf"
                 vortexImPt = h5py.File(nameMat, "w")
@@ -549,7 +549,19 @@ def loadMaterialsJSON(materialData):
         print(listOfMaterials[i].name, listOfMaterials[i].density,
               listOfMaterials[i].pathToProjections)
     input('Press enter to continue...')
-    return listOfMaterials, absorptionTomo
+
+    print('Reading scan parameters')
+    scanParameters = {}
+    scanParameters["width"] = data["scanParameters"]["width"]
+    scanParameters["height"] = data["scanParameters"]["height"]
+    scanParameters["depthProjections"] = \
+        data["scanParameters"]["depthProjections"]
+    scanParameters["tomoCentre"] = data["scanParameters"]["tomoCentre"]
+    scanParameters["minFluoSignal"] = data["scanParameters"]["minFluoSignal"]
+    scanParameters["projShift"] = data["scanParameters"]["projShift"]
+    outDir = data["outputFolder"]["path"]
+
+    return listOfMaterials, absorptionTomo, scanParameters, outDir
 
 
 def loadMassAttenuationCoefficients(listOfMaterials):
@@ -604,15 +616,13 @@ def loadMassAttenuationCoefficients(listOfMaterials):
 if __name__ == "__main__":
 
     scanData = "ScanData.json"
-    width = 25
-    height = 1
-    depthProjections = 25
-    tomoCentre = 13
-    minFluoSignal = 10
-    projShift = 1
 
-    listOfMaterials, absorptionTomo = loadMaterialsJSON(scanData)
+    listOfMaterials, absorptionTomo, scanParams, outDir = \
+        loadMaterialsJSON(scanData)
     listOfMaterials = loadMassAttenuationCoefficients(listOfMaterials)
 
     AttenuationCorrection(listOfMaterials, absorptionTomo, 'data',
-                          tomoCentre, minFluoSignal, projShift)
+                          scanParams["tomoCentre"],
+                          scanParams["minFluoSignal"],
+                          scanParams["projShift"],
+                          outDir)
