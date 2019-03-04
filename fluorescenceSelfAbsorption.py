@@ -531,32 +531,15 @@ def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
     print('all done, all closed')
 
 
-# For testing function
-if __name__ == "__main__":
+def loadMaterialsJSON(materialData):
 
-    materialName = "DensitiesForTest.json"
-
-    with open(materialName) as json_data_file:
+    with open(materialData) as json_data_file:
         data = json.load(json_data_file)
         print(data)
         print(data["materials"]["name"][0], len(data["materials"]["name"]))
     input('Press enter to continue...')
-    '''
-    numbOfMaterials=2
 
-
-    namePt="/dls/i13-1/data/2017/cm16785-1/processing/VortexTomo/vortexProjectionsPtDriftCorrection2702.hdf"
-    nameCu="/dls/i13-1/data/2017/cm16785-1/processing/VortexTomo/vortexProjectionsCuDriftCorrection2702.hdf"
-
-    massAttcoeffCu118=164.83
-    massAttcoeffPt118=185.2#184.0857#134.3#
-
-    massAttcoeffCu944=250.18#127.08#252.5462#241.8#
-    massAttcoeffPt944=137.14#130.3238#288.16#
-
-    massAttcoeffCu804=50.028
-    massAttcoeffPt804=190.3#197.5128#321.4#
-    '''
+    absorptionTomo = data["absorptionTomo"]["path"]
 
     listOfMaterials = []
     for i in range(len(data["materials"]["name"])):
@@ -566,6 +549,10 @@ if __name__ == "__main__":
         print(listOfMaterials[i].name, listOfMaterials[i].density,
               listOfMaterials[i].pathToProjections)
     input('Press enter to continue...')
+    return listOfMaterials, absorptionTomo
+
+
+def loadMassAttenuationCoefficients(listOfMaterials):
     print('loading mass attenuation coefficients...')
 
     massAttenuationCoefficients = "FluorescenceTestParameterFile.json"
@@ -573,11 +560,11 @@ if __name__ == "__main__":
     with open(massAttenuationCoefficients) as json_data_file:
         data2 = json.load(json_data_file)
         # print(data2)
-        for i in range(len(data["materials"]["name"])):
+        for i in range(len(listOfMaterials)):
             print('setting up mass absorption coefficient for ',
                   listOfMaterials[i].name)
 
-            for j in range(len(data["materials"]["name"])):
+            for j in range(len(listOfMaterials)):
                 # print('mass absorption For ', listOfMaterials[j].name, 'is',
                 # data2[listOfMaterials[i].name][listOfMaterials[j].name]
                 listOfMaterials[i].myDictionary[listOfMaterials[j].name] =\
@@ -594,27 +581,38 @@ if __name__ == "__main__":
           listOfMaterials[1].myDictionary["Pt"],
           listOfMaterials[1].myDictionary["Cu"])
     input('finished loading material properties: Press enter to continue...')
+    return listOfMaterials
 
+    '''
+    numbOfMaterials=2
+
+    namePt="/dls/i13-1/data/2017/cm16785-1/processing/VortexTomo/vortexProjectionsPtDriftCorrection2702.hdf"
+    nameCu="/dls/i13-1/data/2017/cm16785-1/processing/VortexTomo/vortexProjectionsCuDriftCorrection2702.hdf"
+
+    massAttcoeffCu118=164.83
+    massAttcoeffPt118=185.2#184.0857#134.3#
+
+    massAttcoeffCu944=250.18#127.08#252.5462#241.8#
+    massAttcoeffPt944=137.14#130.3238#288.16#
+
+    massAttcoeffCu804=50.028
+    massAttcoeffPt804=190.3#197.5128#321.4#
+    '''
+
+
+# For testing function
+if __name__ == "__main__":
+
+    scanData = "ScanData.json"
     width = 25
     height = 1
     depthProjections = 25
     tomoCentre = 13
-    # name="/home/xfz42935/Documents/Vortex/Merlin/merlinProjections.hdf"
-
-    # name="/dls/i13-1/data/2017/cm16785-1/processing/VortexTomo/vortexProjectionsPtAttenuation.hdf"
-    nameMerlinTomo = "Absorption.hdf"
-
-    # name="/dls/i13-1/data/2017/cm16785-1/processing/VortexTomo/vortexProjectionsPtAttenuation.hdf"
-    # vortexIm=h5py.File(name,"w")
-    # dsetImage=vortexIm.create_dataset('data',
-    #    (depthProjections,height,width),'f')
-    # print(dsetImage.shape)
-    # print(dsetImage.dtype)
-    # count=0
-    # imageVortex=np.zeros(((depthProjections,height,width)))
-    # myMax=0
-
     minFluoSignal = 10
     projShift = 1
-    AttenuationCorrection(listOfMaterials, nameMerlinTomo, 'data',
+
+    listOfMaterials, absorptionTomo = loadMaterialsJSON(scanData)
+    listOfMaterials = loadMassAttenuationCoefficients(listOfMaterials)
+
+    AttenuationCorrection(listOfMaterials, absorptionTomo, 'data',
                           tomoCentre, minFluoSignal, projShift)

@@ -8,6 +8,6 @@
 		"path":"/home/xfz42935/Documents/Fluorescence/"
 	},
 	"absorptionTomo":{
-		"path":"/home/xfz42935/Documents/Fluorescence/Absorption.hdf"
+		"path":"Absorption.hdf"
 	}
 }
