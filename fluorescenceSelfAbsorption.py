@@ -69,18 +69,7 @@ def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
     # CuTransmThroughPt=0.9951
     # PtTransmThroughCu=0.995
     # PtTransmThroughPt=0.996
-    '''
-    print('looking for "',dataFolder, '" in the tree...')
-    contLoop=True
-    pathTot=''
-    contLoop, pathToData, pathTot=myRec(mypathPt,contLoop,pathTot,dataFolder)
 
-    print('looking for "',dataFolder, '" in the tree...')
-    contLoop2=True
-    pathTot2=''
-    contLoop2, pathToData2, pathTot2=myRec(mypathCu,contLoop2,
-                                           pathTot2,dataFolder)
-    '''
     print('looking for "', dataFolder, '" in the tree...')
     contLoop3 = True
     pathTot3 = ''
@@ -164,13 +153,9 @@ def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
         for nMat in range(len(listOfMaterials)):
                 nameTomoMaterial = outDir + listOfMaterials[nMat].name \
                                    + "Test21082018V3.hdf"
-                # nameTomoPt="/dls/i13-1/data/2017/cm16785-1/processing/VortexTomo/vortexTomoPt2506.hdf"
-                # nameTomoCu="/dls/i13-1/data/2017/cm16785-1/processing/VortexTomo/vortexTomoCu2506.hdf"
 
                 height = 1
                 print(nMat, np.shape(materialsAnalysis[nMat].projection))
-                # chepappa=np.zeros((25,1,25))
-                # chepappa[:,0,:]=materialsAnalysis[nMat].projection
                 print('projection')
                 plt.imshow(materialsAnalysis[nMat].projection[:, 0, :])
                 plt.show()
