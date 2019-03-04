@@ -15,16 +15,12 @@ except NameError:
 
 
 class material(object):
-    def __init__(self, name, density):
+    def __init__(self, name):
         self.name = name
-        self.density = density
         print('class defining material')
-        # name = ''
         keys = ['material', 'massAbsCoef']
         self.myDictionary = dict(dict.fromkeys(keys, None))
 
-    # def setName(self,materialName):
-    #    self.name=materialName
     def readName(self):
         print('material name:', self.name)
 
@@ -526,12 +522,12 @@ def loadMaterialsJSON(materialData):
 
     listOfMaterials = []
     for i in range(len(data["materials"]["name"])):
-        listOfMaterials.append(material(data["materials"]["name"][i],
-                               data["materials"]["density"][i]))
+        listOfMaterials.append(material(data["materials"]["name"][i]))
         listOfMaterials[i].setPathToProjections(data["materials"]["path"][i])
-        print(listOfMaterials[i].name, listOfMaterials[i].density,
-              listOfMaterials[i].pathToProjections)
+        print(listOfMaterials[i].name, listOfMaterials[i].pathToProjections)
     input('Press enter to continue...')
+
+    listOfMaterials = loadMassAttenuationCoefficients(listOfMaterials)
 
     print('Reading scan parameters')
     scanParameters = {}
@@ -603,7 +599,6 @@ if __name__ == "__main__":
 
     listOfMaterials, absorptionTomo, scanParams, outDir = \
         loadMaterialsJSON(scanData)
-    listOfMaterials = loadMassAttenuationCoefficients(listOfMaterials)
 
     AttenuationCorrection(listOfMaterials, absorptionTomo, 'data', nIterations,
                           scanParams["tomoCentre"],

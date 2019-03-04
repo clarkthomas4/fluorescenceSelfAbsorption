@@ -1,7 +1,6 @@
 {
 	"materials":{
 		"name":["Cu", "Pt"],
-		"density":[8.96,21.45],
 		"path":["data/Cu21082018.hdf","data/Pt21082018.hdf"]
 	},
 	"outputFolder":{
