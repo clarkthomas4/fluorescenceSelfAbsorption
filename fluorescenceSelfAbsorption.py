@@ -53,11 +53,9 @@ class materialProjectionsTomo(object):
 
 
 def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
-                          tomoCentre, minFluoSignal, projShift, outDir):
-    # print(pathToNexusPt)
+                          nIterations, tomoCentre, minFluoSignal,
+                          projShift, outDir):
 
-    # mypathPt=h5py.File(pathToNexusPt,'r')
-    # mypathCu=h5py.File(pathToNexusCu,'r')
     pixelSize = 10.0e-4  # cm
     mypathMerlin = h5py.File(pathToMerlinTomo, 'r')
     '''
@@ -75,7 +73,7 @@ def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
     pathTot3 = ''
     contLoop3, pathToData3, pathTot3 = myRec(mypathMerlin, contLoop3,
                                              pathTot3, dataFolder)
-    iterations = 5
+    iterations = nIterations
     if not (contLoop3):
         print('database "', dataFolder, '" found in  ', pathTot3)
         # npdataPt=np.array(mypathPt[str(pathTot)])
@@ -601,12 +599,13 @@ def loadMassAttenuationCoefficients(listOfMaterials):
 if __name__ == "__main__":
 
     scanData = "ScanData.json"
+    nIterations = 5
 
     listOfMaterials, absorptionTomo, scanParams, outDir = \
         loadMaterialsJSON(scanData)
     listOfMaterials = loadMassAttenuationCoefficients(listOfMaterials)
 
-    AttenuationCorrection(listOfMaterials, absorptionTomo, 'data',
+    AttenuationCorrection(listOfMaterials, absorptionTomo, 'data', nIterations,
                           scanParams["tomoCentre"],
                           scanParams["minFluoSignal"],
                           scanParams["projShift"],
