@@ -133,6 +133,23 @@ def myRec(obj, continueLoop, pathTot, dataFolder):
     return continueLoop, temp, pathTot
 
 
+def getDataPath(myPath, dataFolder):
+    '''
+    Wrapper function to use myRec
+    '''
+    print('looking for "', dataFolder, '" in the tree...')
+    contLoop = True
+    pathTot = ''
+    contLoop, pathToData, pathTot = myRec(myPath, contLoop,
+                                          pathTot, dataFolder)
+
+    if (contLoop):
+        print('database "', dataFolder, '" not found!')
+    else:
+        print('database "', dataFolder, '" found in  ', pathTot)
+        return contLoop, pathTot
+
+
 # For testing function
 if __name__ == "__main__":
     # pathToNexustomoData='/dls/i13-1/data/2017/cm16785-1/processing/merlinTomo/merlinProjections.hdf'

@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 from scipy import math
 import cv2
 import json
-from TomopyReconstructionForFluorescenceTest import tomography, myRec
+from TomopyReconstructionForFluorescenceTest import tomography, getDataPath
 
 # Solve python2/3 (raw_)input compatibility issue
 try:
@@ -55,6 +55,7 @@ def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
     projShift = scanParams["projShift"]
     pixelSize = scanParams["pixelSize"]
 
+    iterations = nIterations
     mypathMerlin = h5py.File(pathToMerlinTomo, 'r')
 
     '''
@@ -67,19 +68,11 @@ def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
     # PtTransmThroughCu=0.995
     # PtTransmThroughPt=0.996
 
-    print('looking for "', dataFolder, '" in the tree...')
-    contLoop3 = True
-    pathTot3 = ''
-    contLoop3, pathToData3, pathTot3 = myRec(mypathMerlin, contLoop3,
-                                             pathTot3, dataFolder)
-    iterations = nIterations
-    if not (contLoop3):
-        print('database "', dataFolder, '" found in  ', pathTot3)
-        # npdataPt=np.array(mypathPt[str(pathTot)])
-        # npdataCu=np.array(mypathCu[str(pathTot2)])
-        # projectionMerlin = mypathMerlin[str(pathTot3)]
+    contLoop, pathTot = getDataPath(mypathMerlin, dataFolder)
+    # Does this actually get used except to test the existence of the folder?!
+
+    if not (contLoop):
         tomoMerlin = np.zeros((1, 25, 25))
-        # theta=tomopy.angles(180, 0, 25)
         tomoMerlin = tomography(pathToMerlinTomo, 'data', 12, 0)
         tomoMerlin[0, 1:25, :] = tomoMerlin[0, 0:24, :]
         print('absorption tomo done', np.shape(tomoMerlin))
@@ -97,12 +90,9 @@ def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
             # name = listOfMaterials[i]
             temp = materialProjectionsTomo(
                 listOfMaterials[i].name, listOfMaterials[i].pathToProjections)
-            contLoop = True
-            pathTot = ''
             print('path to projections', listOfMaterials[i].pathToProjections)
             mypathTemp = h5py.File(temp.path, 'r')
-            contLoop, pathToData, pathTot = myRec(mypathTemp, contLoop,
-                                                  pathTot, dataFolder)
+            contLoop, pathTot = getDataPath(mypathTemp, dataFolder)
             print(contLoop)
             try:
                 print(np.shape(np.array(mypathTemp[str(pathTot)])))
