@@ -56,7 +56,6 @@ def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
     pixelSize = scanParams["pixelSize"]
 
     iterations = nIterations
-    mypathMerlin = h5py.File(pathToMerlinTomo, 'r')
 
     '''
     trasmission through a pixel calculated from the transmission measured with
@@ -68,7 +67,7 @@ def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
     # PtTransmThroughCu=0.995
     # PtTransmThroughPt=0.996
 
-    contLoop, pathTot = getDataPath(mypathMerlin, dataFolder)
+    contLoop, pathTot = getDataPath(pathToMerlinTomo, dataFolder)
     # Does this actually get used except to test the existence of the folder?!
 
     if not (contLoop):
@@ -92,7 +91,7 @@ def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
                 listOfMaterials[i].name, listOfMaterials[i].pathToProjections)
             print('path to projections', listOfMaterials[i].pathToProjections)
             mypathTemp = h5py.File(temp.path, 'r')
-            contLoop, pathTot = getDataPath(mypathTemp, dataFolder)
+            contLoop, pathTot = getDataPath(temp.path, dataFolder)
             print(contLoop)
             try:
                 print(np.shape(np.array(mypathTemp[str(pathTot)])))
@@ -117,12 +116,6 @@ def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
                 print(dataFolder, listOfMaterials[i].pathToProjections,
                       'not found! closing uffa')
 
-        # input("Press Enter to continue...")
-        # materialsAnalysis.append(materialProjectionsTomo())
-        # materialsAnalysis=[]
-        # npdataPt=np.array(mypathPt[str(pathTot)])
-
-        # input("Press Enter to continue...")
         '''
         STEP 1:
         do the tomography with the acquired sinograms

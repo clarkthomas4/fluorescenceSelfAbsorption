@@ -133,10 +133,11 @@ def myRec(obj, continueLoop, pathTot, dataFolder):
     return continueLoop, temp, pathTot
 
 
-def getDataPath(myPath, dataFolder):
+def getDataPath(h5File, dataFolder):
     '''
     Wrapper function to use myRec
     '''
+    myPath = h5py.File(h5File, 'r')
     print('looking for "', dataFolder, '" in the tree...')
     contLoop = True
     pathTot = ''
