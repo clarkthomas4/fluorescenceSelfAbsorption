@@ -15,6 +15,7 @@
         "depthProjections":25,
         "tomoCentre":13,
         "minFluoSignal":10,
-        "projShift":1
+        "projShift":1,
+        "pixelSize":10.0e-4
     }
 }

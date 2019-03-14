@@ -4,7 +4,6 @@ from matplotlib import pyplot as plt
 from scipy import math
 import cv2
 import json
-# from matplotlib.cm import coolwarm
 from TomopyReconstructionForFluorescenceTest import tomography, myRec
 
 # Solve python2/3 (raw_)input compatibility issue
@@ -49,11 +48,15 @@ class materialProjectionsTomo(object):
 
 
 def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
-                          nIterations, tomoCentre, minFluoSignal,
-                          projShift, outDir):
+                          nIterations, scanParams, outDir):
 
-    pixelSize = 10.0e-4  # cm
+    tomoCentre = scanParams["tomoCentre"]
+    minFluoSignal = scanParams["minFluoSignal"]
+    projShift = scanParams["projShift"]
+    pixelSize = scanParams["pixelSize"]
+
     mypathMerlin = h5py.File(pathToMerlinTomo, 'r')
+
     '''
     trasmission through a pixel calculated from the transmission measured with
     the  Merlin: the effective density of Pt is found to be 1g/cm^3,
@@ -538,6 +541,7 @@ def loadMaterialsJSON(materialData):
     scanParameters["tomoCentre"] = data["scanParameters"]["tomoCentre"]
     scanParameters["minFluoSignal"] = data["scanParameters"]["minFluoSignal"]
     scanParameters["projShift"] = data["scanParameters"]["projShift"]
+    scanParameters["pixelSize"] = data["scanParameters"]["pixelSize"]
     outDir = data["outputFolder"]["path"]
 
     return listOfMaterials, absorptionTomo, scanParameters, outDir
@@ -601,7 +605,4 @@ if __name__ == "__main__":
         loadMaterialsJSON(scanData)
 
     AttenuationCorrection(listOfMaterials, absorptionTomo, 'data', nIterations,
-                          scanParams["tomoCentre"],
-                          scanParams["minFluoSignal"],
-                          scanParams["projShift"],
-                          outDir)
+                          scanParams, outDir)
