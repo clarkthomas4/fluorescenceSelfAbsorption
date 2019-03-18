@@ -48,14 +48,12 @@ class materialProjectionsTomo(object):
 
 
 def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
-                          nIterations, scanParams, outDir):
+                          iterations, scanParams, outDir):
 
     tomoCentre = scanParams["tomoCentre"]
     minFluoSignal = scanParams["minFluoSignal"]
     projShift = scanParams["projShift"]
     pixelSize = scanParams["pixelSize"]
-
-    iterations = nIterations
 
     '''
     trasmission through a pixel calculated from the transmission measured with
