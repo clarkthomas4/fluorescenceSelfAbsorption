@@ -105,7 +105,8 @@ def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
             plt.imshow(materialsAnalysis[i].tomo[0, :, :])
             plt.show()
             input("Press Enter to continue...")
-        except:
+        except KeyError:
+            print("KeyError thrown: incorrect path to data")
             print(dataFolder, listOfMaterials[i].pathToProjections,
                   'not found! closing uffa')
 
@@ -478,9 +479,9 @@ def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
     print('all done, all closed')
 
 
-def loadMaterialsJSON(materialData):
+def loadScanJSON(scanData):
 
-    with open(materialData) as json_data_file:
+    with open(scanData) as json_data_file:
         data = json.load(json_data_file)
         print(data)
         print(data["materials"]["name"][0], len(data["materials"]["name"]))
@@ -566,8 +567,7 @@ if __name__ == "__main__":
     scanData = "ScanData.json"
     nIterations = 5
 
-    listOfMaterials, absorptionTomo, scanParams, outDir = \
-        loadMaterialsJSON(scanData)
+    materials, absorptionTomo, scanParams, outDir = loadScanJSON(scanData)
 
-    AttenuationCorrection(listOfMaterials, absorptionTomo, 'data', nIterations,
+    AttenuationCorrection(materials, absorptionTomo, 'data', nIterations,
                           scanParams, outDir)
