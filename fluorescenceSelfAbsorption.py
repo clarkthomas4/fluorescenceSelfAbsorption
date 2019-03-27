@@ -13,6 +13,20 @@ except NameError:
     pass
 
 
+class jsonDataFile():
+    def __init__(self, file):
+        self.file = file
+        with open(self.file) as json_data_file:
+            self.data = json.load(json_data_file)
+
+    def getData(self):
+        return self.data
+
+
+class scan():
+    pass
+
+
 class material(object):
     def __init__(self, name):
         self.name = name
@@ -480,11 +494,9 @@ def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
 
 
 def loadScanJSON(scanData):
-
-    with open(scanData) as json_data_file:
-        data = json.load(json_data_file)
-        print(data)
-        print(data["materials"]["name"][0], len(data["materials"]["name"]))
+    data = scanData.getData()
+    print(data)
+    print(data["materials"]["name"][0], len(data["materials"]["name"]))
     input('Press enter to continue...')
 
     absorptionTomo = data["absorptionTomo"]["path"]
@@ -516,25 +528,25 @@ def loadScanJSON(scanData):
 def loadMassAttenuationCoefficients(listOfMaterials):
     print('loading mass attenuation coefficients...')
 
-    massAttenuationCoefficients = "FluorescenceTestParameterFile.json"
+    massAttenuationCoefficients = \
+        jsonDataFile("FluorescenceTestParameterFile.json")
 
-    with open(massAttenuationCoefficients) as json_data_file:
-        data2 = json.load(json_data_file)
-        # print(data2)
-        for i in range(len(listOfMaterials)):
-            print('setting up mass absorption coefficient for ',
-                  listOfMaterials[i].name)
+    data2 = massAttenuationCoefficients.getData()
+    # print(data2)
+    for i in range(len(listOfMaterials)):
+        print('setting up mass absorption coefficient for ',
+              listOfMaterials[i].name)
 
-            for j in range(len(listOfMaterials)):
-                # print('mass absorption For ', listOfMaterials[j].name, 'is',
-                # data2[listOfMaterials[i].name][listOfMaterials[j].name]
-                listOfMaterials[i].myDictionary[listOfMaterials[j].name] =\
-                    data2[listOfMaterials[i].name][listOfMaterials[j].name]
-                listOfMaterials[i].myDictionary["Beam"] =\
-                    data2[listOfMaterials[i].name]["Beam"]
-            print('here')
-            print('my dictionary', listOfMaterials[i].myDictionary,  i)
-        print('my dictionary', listOfMaterials[0].myDictionary)
+        for j in range(len(listOfMaterials)):
+            # print('mass absorption For ', listOfMaterials[j].name, 'is',
+            # data2[listOfMaterials[i].name][listOfMaterials[j].name]
+            listOfMaterials[i].myDictionary[listOfMaterials[j].name] =\
+                data2[listOfMaterials[i].name][listOfMaterials[j].name]
+            listOfMaterials[i].myDictionary["Beam"] =\
+                data2[listOfMaterials[i].name]["Beam"]
+        print('here')
+        print('my dictionary', listOfMaterials[i].myDictionary,  i)
+    print('my dictionary', listOfMaterials[0].myDictionary)
     print('my dictionary', listOfMaterials[0].myDictionary["Beam"],
           listOfMaterials[0].myDictionary["Pt"],
           listOfMaterials[0].myDictionary["Cu"])
@@ -544,27 +556,11 @@ def loadMassAttenuationCoefficients(listOfMaterials):
     input('finished loading material properties: Press enter to continue...')
     return listOfMaterials
 
-    '''
-    numbOfMaterials=2
-
-    namePt="/dls/i13-1/data/2017/cm16785-1/processing/VortexTomo/vortexProjectionsPtDriftCorrection2702.hdf"
-    nameCu="/dls/i13-1/data/2017/cm16785-1/processing/VortexTomo/vortexProjectionsCuDriftCorrection2702.hdf"
-
-    massAttcoeffCu118=164.83
-    massAttcoeffPt118=185.2#184.0857#134.3#
-
-    massAttcoeffCu944=250.18#127.08#252.5462#241.8#
-    massAttcoeffPt944=137.14#130.3238#288.16#
-
-    massAttcoeffCu804=50.028
-    massAttcoeffPt804=190.3#197.5128#321.4#
-    '''
-
 
 # For testing function
 if __name__ == "__main__":
 
-    scanData = "ScanData.json"
+    scanData = jsonDataFile("ScanData.json")
     nIterations = 5
 
     materials, absorptionTomo, scanParams, outDir = loadScanJSON(scanData)
