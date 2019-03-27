@@ -24,7 +24,54 @@ class jsonDataFile():
 
 
 class scan():
-    pass
+    def __init__(self, scanData):
+        self.data = scanData.getData()
+
+        self.absorptionTomo = self.data["absorptionTomo"]["path"]
+
+        self.listOfMaterials = []
+        for i in range(len(self.data["materials"]["name"])):
+            self.listOfMaterials.append(
+                material(self.data["materials"]["name"][i]))
+            self.listOfMaterials[i].setPathToProjections(
+                self.data["materials"]["path"][i])
+            print(self.listOfMaterials[i].name,
+                  self.listOfMaterials[i].pathToProjections)
+        input('Press enter to continue...')
+
+        self.listOfMaterials = \
+            loadMassAttenuationCoefficients(self.listOfMaterials)
+
+        print('Reading scan parameters')
+        self.scanParameters = {}
+        self.scanParameters["width"] = self.data["scanParameters"]["width"]
+        self.scanParameters["height"] = self.data["scanParameters"]["height"]
+        self.scanParameters["depthProjections"] = \
+            self.data["scanParameters"]["depthProjections"]
+        self.scanParameters["tomoCentre"] = \
+            self.data["scanParameters"]["tomoCentre"]
+        self.scanParameters["minFluoSignal"] = \
+            self.data["scanParameters"]["minFluoSignal"]
+        self.scanParameters["projShift"] = \
+            self.data["scanParameters"]["projShift"]
+        self.scanParameters["pixelSize"] = \
+            self.data["scanParameters"]["pixelSize"]
+        self.outDir = self.data["outputFolder"]["path"]
+
+    def printData(self):
+        print(self.data)
+
+    def getMaterials(self):
+        return self.listOfMaterials
+
+    def getAbsorptionTomo(self):
+        return self.absorptionTomo
+
+    def getScanParams(self):
+        return self.scanParameters
+
+    def getOutputDir(self):
+        return self.outDir
 
 
 class material(object):
@@ -61,9 +108,12 @@ class materialProjectionsTomo(object):
         self.tomo = tomo
 
 
-def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
-                          iterations, scanParams, outDir):
+def AttenuationCorrection(scan, dataFolder, iterations):
 
+    listOfMaterials = scan.getMaterials()
+    nMaterials = len(listOfMaterials)
+
+    scanParams = scan.getScanParams()
     tomoCentre = scanParams["tomoCentre"]
     minFluoSignal = scanParams["minFluoSignal"]
     projShift = scanParams["projShift"]
@@ -79,13 +129,13 @@ def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
     # PtTransmThroughCu=0.995
     # PtTransmThroughPt=0.996
 
-    contLoop, pathTot = getDataPath(pathToMerlinTomo, dataFolder)
+    contLoop, pathTot = getDataPath(scan.getAbsorptionTomo(), dataFolder)
     if (contLoop):
         print('database "', dataFolder, '" not found!')
         return
 
     tomoMerlin = np.zeros((1, 25, 25))
-    tomoMerlin = tomography(pathToMerlinTomo, 'data', 12, 0)
+    tomoMerlin = tomography(scan.getAbsorptionTomo(), 'data', 12, 0)
     tomoMerlin[0, 1:25, :] = tomoMerlin[0, 0:24, :]
     print('absorption tomo done', np.shape(tomoMerlin))
     plt.imshow(tomoMerlin[0, :, :])
@@ -93,11 +143,11 @@ def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
     input('Press Enter to continue...')
 
     print('loading materials')
-    print(len(listOfMaterials))
+    print(nMaterials)
     materialsAnalysis = []
     print('loading data...')
 
-    for i in range(len(listOfMaterials)):
+    for i in range(nMaterials):
         print('Im happy here')
         temp = materialProjectionsTomo(
             listOfMaterials[i].name, listOfMaterials[i].pathToProjections)
@@ -129,18 +179,18 @@ def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
     do the tomography with the acquired sinograms
     '''
     testIteration = 0
-    NewMaterials = [None] * len(listOfMaterials)
-    MaterialsCorrection = [None] * len(listOfMaterials)
-    # MaterialDensity = [None] * len(listOfMaterials)
+    NewMaterials = [None] * nMaterials
+    MaterialsCorrection = [None] * nMaterials
+    # MaterialDensity = [None] * nMaterials
     # oscillation = np.zeros(iterations)
 
-    vortexImPtCorr = [None] * len(listOfMaterials)
-    dsetImagePtCorr = [None] * len(listOfMaterials)
-    dsetOscillation = [None] * len(listOfMaterials)
+    vortexImPtCorr = [None] * nMaterials
+    dsetImagePtCorr = [None] * nMaterials
+    dsetOscillation = [None] * nMaterials
 
-    for nMat in range(len(listOfMaterials)):
-            nameTomoMaterial = outDir + listOfMaterials[nMat].name \
-                               + "Test21082018V3.hdf"
+    for nMat in range(nMaterials):
+            nameTomoMaterial = scan.getOutputDir() + \
+                listOfMaterials[nMat].name + "Test21082018V3.hdf"
 
             height = 1
             print(nMat, np.shape(materialsAnalysis[nMat].projection))
@@ -157,7 +207,7 @@ def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
 
     while testIteration < iterations:
         if testIteration == 0:
-            for nMat in range(len(listOfMaterials)):
+            for nMat in range(nMaterials):
                 dsetImagePtCorr[nMat][testIteration, :, :, :] = \
                     materialsAnalysis[nMat].tomo[:, :, :]
                 print(np.shape(materialsAnalysis[nMat].tomo[:, :, :]))
@@ -174,7 +224,7 @@ def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
         width = 0
         # print(a,b,c, 'shape')
         # SumTotTomo=np.zeros(np.shape(tomoMerlin))
-        for nMat in range(len(listOfMaterials)):
+        for nMat in range(nMaterials):
             # print(nMat)
 
             # print('reconstruction done for ',
@@ -199,11 +249,11 @@ def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
         print('VALUE', materialsAnalysis[1].tomo[0, 12, 12])
         # oscillation[testIteration-1]=materialsAnalysis[1].tomo[1,25,68]
         # input("Press Enter to continue...")
-        materialRatio = [None]*len(listOfMaterials)
+        materialRatio = [None]*nMaterials
         materialEffectiveDensity = [None]*height
 
         for heightIndex in range(height):
-            effDens = np.zeros([width, width, len(listOfMaterials)])
+            effDens = np.zeros([width, width, nMaterials])
             for firstIndex in range(width):
                 for secondIndex in range(width):
                     nonZerMat = 0
@@ -216,7 +266,7 @@ def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
                     '''
                     find a material if any exist at this scanning position
                     '''
-                    for nonZerMat in range(len(listOfMaterials)):
+                    for nonZerMat in range(nMaterials):
                         if materialsAnalysis[nonZerMat].tomo[
                             heightIndex, firstIndex,
                                 secondIndex] > minFluoSignal:
@@ -225,7 +275,7 @@ def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
                                       nonZerMat, 'nonzeromat')
                             break
 
-                    for nMat in range(len(listOfMaterials)):
+                    for nMat in range(nMaterials):
                         # effDensTemp=np.zeros([height,width,width])
 
                         # materialRatio[nMat]=materialsAnalysis[nMat].tomo[heightIndex,firstIndex,secondIndex]/SumTotTomo[heightIndex,firstIndex,secondIndex]
@@ -296,7 +346,7 @@ def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
                     calculate the density for all the other materials
                     '''
 
-                    for nMat in range(len(listOfMaterials)):
+                    for nMat in range(nMaterials):
                         effDens[firstIndex, secondIndex, nMat] = \
                             densitynonZeroMat * materialRatio[nMat]
                         if (firstIndex == 12 and secondIndex == 12):
@@ -313,7 +363,7 @@ def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
         plt.clim(0, 0.5)
         plt.show()
 
-        MaterialCorrection = np.ones((len(listOfMaterials), nAngles,
+        MaterialCorrection = np.ones((nMaterials, nAngles,
                                       height, width, width))
 
         print('doing correction')
@@ -343,15 +393,15 @@ def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
                 dstShifted[0:width-1-shift, :] = dst[shift:width-1, :]
                 binaryMask = np.zeros((width, width))
 
-                # MaterialSlice = [None]*len(listOfMaterials)
-                dstShiftedMaterial = [None]*len(listOfMaterials)
-                shiftedMaterialDensity = [None]*len(listOfMaterials)
-                binaryMaskMaterial = [None]*len(listOfMaterials)
+                # MaterialSlice = [None]*nMaterials
+                dstShiftedMaterial = [None]*nMaterials
+                shiftedMaterialDensity = [None]*nMaterials
+                binaryMaskMaterial = [None]*nMaterials
                 '''
                 rotating fluorescence and density
                 '''
 
-                for nMat in range(len(listOfMaterials)):
+                for nMat in range(nMaterials):
 
                     '''
                     rotate tomography of each material
@@ -386,7 +436,7 @@ def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
                         if (dstShifted[kk, ll] > minimum)\
                                 and (dstShifted[kk, ll] < maximum):
                                     binaryMask[kk, ll] = 1
-                        for nMat in range(len(listOfMaterials)):
+                        for nMat in range(nMaterials):
                             minFluoSignal = np.average(np.average(
                                 materialsAnalysis[nMat].tomo[0, 0:5, 0:5]))
                             if (dstShiftedMaterial[nMat][kk, ll]
@@ -410,7 +460,7 @@ def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
                         averageDensityMaterial = np.zeros(len(
                             listOfMaterials))
 
-                        for nMat in range(len(listOfMaterials)):
+                        for nMat in range(nMaterials):
 
                             '''
                             profllMaterial thickness in
@@ -420,7 +470,7 @@ def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
                                 * binaryMaskMaterial[nMat][j, :]
                             correction = 1
                             nMat2 = 0
-                            for nMat2 in range(len(listOfMaterials)):
+                            for nMat2 in range(nMaterials):
 
                                 profllDensMaterial = \
                                     shiftedMaterialDensity[nMat2][ll, :]\
@@ -441,16 +491,16 @@ def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
 
                             MaterialCorrection[nMat, i, k, j, ll] = correction
 
-                    NewCorrectionMaterial = np.ones(len(listOfMaterials))
+                    NewCorrectionMaterial = np.ones(nMaterials)
 
                     for lll in range(j):
-                        for nMat in range(len(listOfMaterials)):
+                        for nMat in range(nMaterials):
                             NewCorrectionMaterial[nMat] *=\
                                 MaterialCorrection[nMat, i, k, j, lll]
                     '''
                     here correct the projection for the attenuation
                     '''
-                    for nMat in range(len(listOfMaterials)):
+                    for nMat in range(nMaterials):
 
                         NewMaterials[nMat][i, k, j] =\
                             materialsAnalysis[nMat].projection[i, k, j]\
@@ -465,10 +515,10 @@ def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
 
         print('all done, writing file for each material....')
 
-        tomoNew = [None]*len(listOfMaterials)
-        for nMat in range(len(listOfMaterials)):
-            nameMat = outDir + "testProjections" + listOfMaterials[nMat].name\
-                       + "21082018V3.hdf"
+        tomoNew = [None]*nMaterials
+        for nMat in range(nMaterials):
+            nameMat = scan.getOutputDir() + "testProjections" + \
+                listOfMaterials[nMat].name + "21082018V3.hdf"
             vortexImPt = h5py.File(nameMat, "w")
             dsetImagePt = vortexImPt.create_dataset(
                 'data', (nAngles, height, width), 'f')
@@ -487,42 +537,10 @@ def AttenuationCorrection(listOfMaterials, pathToMerlinTomo, dataFolder,
             dsetImagePtCorr[nMat][testIteration, :, :, :] = tomoNew[nMat]
             dsetOscillation[nMat][testIteration] =\
                 materialsAnalysis[nMat].tomo[0, 12, 8]
-    for nMat in range(len(listOfMaterials)):
+    for nMat in range(nMaterials):
         vortexImPtCorr[nMat].close()
 
     print('all done, all closed')
-
-
-def loadScanJSON(scanData):
-    data = scanData.getData()
-    print(data)
-    print(data["materials"]["name"][0], len(data["materials"]["name"]))
-    input('Press enter to continue...')
-
-    absorptionTomo = data["absorptionTomo"]["path"]
-
-    listOfMaterials = []
-    for i in range(len(data["materials"]["name"])):
-        listOfMaterials.append(material(data["materials"]["name"][i]))
-        listOfMaterials[i].setPathToProjections(data["materials"]["path"][i])
-        print(listOfMaterials[i].name, listOfMaterials[i].pathToProjections)
-    input('Press enter to continue...')
-
-    listOfMaterials = loadMassAttenuationCoefficients(listOfMaterials)
-
-    print('Reading scan parameters')
-    scanParameters = {}
-    scanParameters["width"] = data["scanParameters"]["width"]
-    scanParameters["height"] = data["scanParameters"]["height"]
-    scanParameters["depthProjections"] = \
-        data["scanParameters"]["depthProjections"]
-    scanParameters["tomoCentre"] = data["scanParameters"]["tomoCentre"]
-    scanParameters["minFluoSignal"] = data["scanParameters"]["minFluoSignal"]
-    scanParameters["projShift"] = data["scanParameters"]["projShift"]
-    scanParameters["pixelSize"] = data["scanParameters"]["pixelSize"]
-    outDir = data["outputFolder"]["path"]
-
-    return listOfMaterials, absorptionTomo, scanParameters, outDir
 
 
 def loadMassAttenuationCoefficients(listOfMaterials):
@@ -563,7 +581,6 @@ if __name__ == "__main__":
     scanData = jsonDataFile("ScanData.json")
     nIterations = 5
 
-    materials, absorptionTomo, scanParams, outDir = loadScanJSON(scanData)
+    scan = scan(scanData)
 
-    AttenuationCorrection(materials, absorptionTomo, 'data', nIterations,
-                          scanParams, outDir)
+    AttenuationCorrection(scan, 'data', nIterations)
