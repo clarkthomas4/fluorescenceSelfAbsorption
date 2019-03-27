@@ -1,8 +1,7 @@
 # fluorescenceSelfAbsorption
 An iterative self-absorption correction algorithm for 3D ptycho-fluorescence imaging
 
-[![Build status](https://travis-ci.org/clarkthomas4/fluorescenceSelfAbsorption.svg?master)](https://travis-ci.org/clarkthomas4)
-
+[![Build Status](https://travis-ci.org/clarkthomas4/fluorescenceSelfAbsorption.svg?master)](https://travis-ci.org/clarkthomas4/fluorescenceSelfAbsorption)
 ___
 
 ##### TODO
