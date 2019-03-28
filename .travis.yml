@@ -22,12 +22,15 @@ install:
   - conda info -a
 
   # Replace dep1 dep2 ... with your dependencies
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION tomopy opencv
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION tomopy opencv coveralls
   - source activate test-environment
 
 script:
   # Your test script goes here
-  - python -m unittest test
+  - coverage run -m unittest test
   # - python fluorescenceSelfAbsorption.py
+
+after_success:
+  - coveralls
 
 # add [skip travis] to commit message to skip travis build
