@@ -27,6 +27,7 @@ install:
 
 script:
   # Your test script goes here
-  - python fluorescenceSelfAbsorption.py
+  - python -m unittest test
+  # - python fluorescenceSelfAbsorption.py
 
 # add [skip travis] to commit message to skip travis build

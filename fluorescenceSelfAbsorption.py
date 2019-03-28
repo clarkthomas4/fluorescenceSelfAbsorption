@@ -25,53 +25,50 @@ class jsonDataFile():
 
 class scan():
     def __init__(self, scanData):
-        self.data = scanData.getData()
+        self._data = scanData.getData()
 
-        self.absorptionTomo = self.data["absorptionTomo"]["path"]
+        self._absorptionTomo = self._data["absorptionTomo"]["path"]
+        self._listOfMaterials = self._createMatList()
+        self._outDir = self._data["outputFolder"]["path"]
 
-        self.listOfMaterials = []
-        for i in range(len(self.data["materials"]["name"])):
-            self.listOfMaterials.append(
-                material(self.data["materials"]["name"][i]))
-            self.listOfMaterials[i].setPathToProjections(
-                self.data["materials"]["path"][i])
-            print(self.listOfMaterials[i].name,
-                  self.listOfMaterials[i].pathToProjections)
-        input('Press enter to continue...')
-
-        self.listOfMaterials = \
-            loadMassAttenuationCoefficients(self.listOfMaterials)
-
-        print('Reading scan parameters')
-        self.scanParameters = {}
-        self.scanParameters["width"] = self.data["scanParameters"]["width"]
-        self.scanParameters["height"] = self.data["scanParameters"]["height"]
-        self.scanParameters["depthProjections"] = \
-            self.data["scanParameters"]["depthProjections"]
-        self.scanParameters["tomoCentre"] = \
-            self.data["scanParameters"]["tomoCentre"]
-        self.scanParameters["minFluoSignal"] = \
-            self.data["scanParameters"]["minFluoSignal"]
-        self.scanParameters["projShift"] = \
-            self.data["scanParameters"]["projShift"]
-        self.scanParameters["pixelSize"] = \
-            self.data["scanParameters"]["pixelSize"]
-        self.outDir = self.data["outputFolder"]["path"]
+        self._scanParameters = {}
+        self._scanParameters["width"] = self._data["scanParameters"]["width"]
+        self._scanParameters["height"] = self._data["scanParameters"]["height"]
+        self._scanParameters["depthProjections"] = \
+            self._data["scanParameters"]["depthProjections"]
+        self._scanParameters["tomoCentre"] = \
+            self._data["scanParameters"]["tomoCentre"]
+        self._scanParameters["minFluoSignal"] = \
+            self._data["scanParameters"]["minFluoSignal"]
+        self._scanParameters["projShift"] = \
+            self._data["scanParameters"]["projShift"]
+        self._scanParameters["pixelSize"] = \
+            self._data["scanParameters"]["pixelSize"]
 
     def printData(self):
-        print(self.data)
+        print(self._data)
 
     def getMaterials(self):
-        return self.listOfMaterials
+        return self._listOfMaterials
 
     def getAbsorptionTomo(self):
-        return self.absorptionTomo
+        return self._absorptionTomo
 
     def getScanParams(self):
-        return self.scanParameters
+        return self._scanParameters
 
     def getOutputDir(self):
-        return self.outDir
+        return self._outDir
+
+    def _createMatList(self):
+        self._matList = []
+        for i in range(len(self._data["materials"]["name"])):
+            self._matList.append(material(self._data["materials"]["name"][i]))
+            self._matList[i].setPathToProjections(
+                self._data["materials"]["path"][i])
+
+        self._matList = loadMassAttenuationCoefficients(self._matList)
+        return self._matList
 
 
 class material(object):
@@ -545,12 +542,12 @@ def AttenuationCorrection(scan, dataFolder, iterations):
 
 def loadMassAttenuationCoefficients(listOfMaterials):
     print('loading mass attenuation coefficients...')
+    # TODO move to a class... material/scan?
 
     massAttenuationCoefficients = \
         jsonDataFile("FluorescenceTestParameterFile.json")
 
     data2 = massAttenuationCoefficients.getData()
-    # print(data2)
     for i in range(len(listOfMaterials)):
         print('setting up mass absorption coefficient for ',
               listOfMaterials[i].name)
@@ -562,7 +559,6 @@ def loadMassAttenuationCoefficients(listOfMaterials):
                 data2[listOfMaterials[i].name][listOfMaterials[j].name]
             listOfMaterials[i].myDictionary["Beam"] =\
                 data2[listOfMaterials[i].name]["Beam"]
-        print('here')
         print('my dictionary', listOfMaterials[i].myDictionary,  i)
     print('my dictionary', listOfMaterials[0].myDictionary)
     print('my dictionary', listOfMaterials[0].myDictionary["Beam"],
@@ -571,7 +567,6 @@ def loadMassAttenuationCoefficients(listOfMaterials):
     print('my dictionary', listOfMaterials[1].myDictionary["Beam"],
           listOfMaterials[1].myDictionary["Pt"],
           listOfMaterials[1].myDictionary["Cu"])
-    input('finished loading material properties: Press enter to continue...')
     return listOfMaterials
 
 
@@ -580,7 +575,6 @@ if __name__ == "__main__":
 
     scanData = jsonDataFile("ScanData.json")
     nIterations = 5
-
     scan = scan(scanData)
 
     AttenuationCorrection(scan, 'data', nIterations)

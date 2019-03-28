@@ -15,5 +15,5 @@ ___
 
 ___
 
-Database of X-ray mass attenuation co-efficients scraped from NIST database, using code by Sébastien Brisard,
+Database of X-ray mass attenuation coefficients scraped from NIST database, using code by Sébastien Brisard,
 available at https://sbrisard.github.io/posts/20170531-Scrapy-ing_the_NIST_X-ray_Attenuation_Databases.html
