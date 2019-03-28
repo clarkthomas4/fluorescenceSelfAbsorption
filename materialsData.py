@@ -29,8 +29,8 @@ def getMassAttenCoeff(element, energy):
 
 if __name__ == "__main__":
     print("Cu beam: ", getMassAttenCoeff('Cu', 0.02))
-    print("Cu beam: ", getMassAttenCoeff('Cu', 0.008048))
-    print("Cu beam: ", getMassAttenCoeff('Cu', 0.009439))
+    print("Cu Cu: ", getMassAttenCoeff('Cu', 0.008048))
+    print("Cu Pt: ", getMassAttenCoeff('Cu', 0.009439))
     print("Pt beam: ", getMassAttenCoeff('Pt', 0.02))
-    print("Pt beam: ", getMassAttenCoeff('Pt', 0.008048))
-    print("Pt beam: ", getMassAttenCoeff('Pt', 0.009439))
+    print("Pt Cu: ", getMassAttenCoeff('Pt', 0.008048))
+    print("Pt Pt: ", getMassAttenCoeff('Pt', 0.009439))

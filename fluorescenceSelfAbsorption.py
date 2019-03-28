@@ -5,6 +5,7 @@ from scipy import math
 import cv2
 import json
 from TomopyReconstructionForFluorescenceTest import tomography, getDataPath
+from materialsData import getElementData
 
 # Solve python2/3 (raw_)input compatibility issue
 try:
@@ -22,6 +23,8 @@ class jsonDataFile():
     def getData(self):
         return self.data
 
+# NOTE Code only handles a single peak per material
+
 
 class scan():
     def __init__(self, scanData):
@@ -29,6 +32,8 @@ class scan():
 
         self._absorptionTomo = self._data["absorptionTomo"]["path"]
         self._listOfMaterials = self._createMatList()
+        self._listOfMaterials = self._loadMassAttenuationCoefficients(
+                                        self._listOfMaterials)
         self._outDir = self._data["outputFolder"]["path"]
 
         self._scanParameters = {}
@@ -44,6 +49,8 @@ class scan():
             self._data["scanParameters"]["projShift"]
         self._scanParameters["pixelSize"] = \
             self._data["scanParameters"]["pixelSize"]
+        self._scanParameters["beamEnergy"] = \
+            self._data["scanParameters"]["beamEnergy"]
 
     def printData(self):
         print(self._data)
@@ -61,36 +68,76 @@ class scan():
         return self._outDir
 
     def _createMatList(self):
-        self._matList = []
+        matList = []
         for i in range(len(self._data["materials"]["name"])):
-            self._matList.append(material(self._data["materials"]["name"][i]))
-            self._matList[i].setPathToProjections(
-                self._data["materials"]["path"][i])
+            newMat = material(self._data["materials"]["name"][i])
+            newMat.setPathToProjections(self._data["materials"]["path"][i])
+            newMat.setPeak(self._data["materials"]["peak"][i])
+            matList.append(newMat)
+        return matList
 
-        self._matList = loadMassAttenuationCoefficients(self._matList)
-        return self._matList
+    def _loadMassAttenuationCoefficients(self, listOfMaterials):
+        print('loading mass attenuation coefficients...')
+
+        massAttenuationCoefficients = \
+            jsonDataFile("FluorescenceTestParameterFile.json")
+
+        data2 = massAttenuationCoefficients.getData()
+        for i in range(len(listOfMaterials)):
+            print('Setting up mass absorption coefficient for ',
+                  listOfMaterials[i].getName())
+            listOfMaterials[i].myDictionary = {}
+
+            for j in range(len(listOfMaterials)):
+                listOfMaterials[i].myDictionary[listOfMaterials[j].getName()] =\
+                    data2[listOfMaterials[i].getName()][
+                        listOfMaterials[j].getName()]
+                listOfMaterials[i].myDictionary["Beam"] =\
+                    data2[listOfMaterials[i].getName()]["Beam"]
+            print('my dictionary', listOfMaterials[i].myDictionary)
+        return listOfMaterials
 
 
-class material(object):
+class material():
     def __init__(self, name):
-        self.name = name
-        print('class defining material')
-        keys = ['material', 'massAbsCoef']
-        self.myDictionary = dict(dict.fromkeys(keys, None))
+        self._name = name
 
-    def readName(self):
-        print('material name:', self.name)
+    def getName(self):
+        return self._name
 
     def setPathToProjections(self, path):
-        self.pathToProjections = path
+        self._pathToProjections = path
+
+    def getPathToProjections(self):
+        return self._pathToProjections
+
+    def setPeak(self, peak):
+        self._peak = peak
+
+    def getPeak(self):
+        return self._peak
+
+    def getMassAttenCoeff(self, energy):
+        '''
+        returns the mass atten coeff at a specified energy
+        '''
+        self._data = getElementData(self._name)
+        if energy in self._data[:, 0]:
+            row = np.where(self._data[:, 0] == energy)
+            return float(self._data[row, 1])
+        else:
+            print("interpolation required")
+            self._data = np.interp(energy, self._data[:, 0], self._data[:, 1])
+            return self._data
 
 
-class processingTools():
-    def __init__(self):
-        print('defining tool')
+class attenuationTable():
+    def __init__(self, matList, scanParams):
+        # create attenuationTable
+        self._beamEnergy = scanParams["beamEnergy"]
 
 
-class materialProjectionsTomo(object):
+class materialProjectionsTomo():
     def __init__(self, name, pathToProjection):
         self.name = name
         print('class defining material')
@@ -147,8 +194,9 @@ def AttenuationCorrection(scan, dataFolder, iterations):
     for i in range(nMaterials):
         print('Im happy here')
         temp = materialProjectionsTomo(
-            listOfMaterials[i].name, listOfMaterials[i].pathToProjections)
-        print('path to projections', listOfMaterials[i].pathToProjections)
+            listOfMaterials[i].getName(),
+            listOfMaterials[i].getPathToProjections())
+        print('path to projections', listOfMaterials[i].getPathToProjections())
         mypathTemp = h5py.File(temp.path, 'r')
         contLoop, pathTot = getDataPath(temp.path, dataFolder)
         print(contLoop)
@@ -168,7 +216,7 @@ def AttenuationCorrection(scan, dataFolder, iterations):
             input("Press Enter to continue...")
         except KeyError:
             print("KeyError thrown: incorrect path to data")
-            print(dataFolder, listOfMaterials[i].pathToProjections,
+            print(dataFolder, listOfMaterials[i].getPathToProjections(),
                   'not found! closing uffa')
 
     '''
@@ -187,7 +235,7 @@ def AttenuationCorrection(scan, dataFolder, iterations):
 
     for nMat in range(nMaterials):
             nameTomoMaterial = scan.getOutputDir() + \
-                listOfMaterials[nMat].name + "Test21082018V3.hdf"
+                listOfMaterials[nMat].getName() + "Test21082018V3.hdf"
 
             height = 1
             print(nMat, np.shape(materialsAnalysis[nMat].projection))
@@ -483,7 +531,7 @@ def AttenuationCorrection(scan, dataFolder, iterations):
                                 correction = correction * math.exp(
                                     -averageDensityMaterial[nMat2]
                                     * listOfMaterials[nMat2].myDictionary[
-                                        listOfMaterials[nMat].name]
+                                        listOfMaterials[nMat].getName()]
                                     * pixelSize)
 
                             MaterialCorrection[nMat, i, k, j, ll] = correction
@@ -515,7 +563,7 @@ def AttenuationCorrection(scan, dataFolder, iterations):
         tomoNew = [None]*nMaterials
         for nMat in range(nMaterials):
             nameMat = scan.getOutputDir() + "testProjections" + \
-                listOfMaterials[nMat].name + "21082018V3.hdf"
+                listOfMaterials[nMat].getName() + "21082018V3.hdf"
             vortexImPt = h5py.File(nameMat, "w")
             dsetImagePt = vortexImPt.create_dataset(
                 'data', (nAngles, height, width), 'f')
@@ -538,36 +586,6 @@ def AttenuationCorrection(scan, dataFolder, iterations):
         vortexImPtCorr[nMat].close()
 
     print('all done, all closed')
-
-
-def loadMassAttenuationCoefficients(listOfMaterials):
-    print('loading mass attenuation coefficients...')
-    # TODO move to a class... material/scan?
-
-    massAttenuationCoefficients = \
-        jsonDataFile("FluorescenceTestParameterFile.json")
-
-    data2 = massAttenuationCoefficients.getData()
-    for i in range(len(listOfMaterials)):
-        print('setting up mass absorption coefficient for ',
-              listOfMaterials[i].name)
-
-        for j in range(len(listOfMaterials)):
-            # print('mass absorption For ', listOfMaterials[j].name, 'is',
-            # data2[listOfMaterials[i].name][listOfMaterials[j].name]
-            listOfMaterials[i].myDictionary[listOfMaterials[j].name] =\
-                data2[listOfMaterials[i].name][listOfMaterials[j].name]
-            listOfMaterials[i].myDictionary["Beam"] =\
-                data2[listOfMaterials[i].name]["Beam"]
-        print('my dictionary', listOfMaterials[i].myDictionary,  i)
-    print('my dictionary', listOfMaterials[0].myDictionary)
-    print('my dictionary', listOfMaterials[0].myDictionary["Beam"],
-          listOfMaterials[0].myDictionary["Pt"],
-          listOfMaterials[0].myDictionary["Cu"])
-    print('my dictionary', listOfMaterials[1].myDictionary["Beam"],
-          listOfMaterials[1].myDictionary["Pt"],
-          listOfMaterials[1].myDictionary["Cu"])
-    return listOfMaterials
 
 
 # For testing function

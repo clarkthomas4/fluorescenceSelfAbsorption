@@ -1,7 +1,8 @@
 {
 	"materials":{
 		"name":["Cu", "Pt"],
-		"path":["data/Cu21082018.hdf","data/Pt21082018.hdf"]
+		"path":["data/Cu21082018.hdf","data/Pt21082018.hdf"],
+		"peak":[0.008048,0.009439]
 	},
 	"outputFolder":{
 		"path":"data/output/"
@@ -16,6 +17,7 @@
         "tomoCentre":13,
         "minFluoSignal":10,
         "projShift":1,
-        "pixelSize":10.0e-4
-    }
+        "pixelSize":10.0e-4,
+				"beamEnergy":0.02
+  }
 }
