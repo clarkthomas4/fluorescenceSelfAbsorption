@@ -4,9 +4,8 @@ An iterative self-absorption correction algorithm for 3D ptycho-fluorescence ima
 [![Build Status](https://travis-ci.org/clarkthomas4/fluorescenceSelfAbsorption.svg?master)](https://travis-ci.org/clarkthomas4/fluorescenceSelfAbsorption)
 ___
 
-##### TODO
-- [x] Remove hard coded file paths
-- [x] Simplify json data input
+##### Future work
+- [ ] Refactor and add unit tests
 - [ ] Create database for elements
 - [ ] Implement detector coverage angle
 - [ ] Optimise execution speed
