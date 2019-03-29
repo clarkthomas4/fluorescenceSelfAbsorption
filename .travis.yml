@@ -27,7 +27,7 @@ install:
 
 script:
   # Your test script goes here
-  - coverage run -m unittest test
+  - coverage run -m unittest discover -s tests
   # - python fluorescenceSelfAbsorption.py
 
 after_success:

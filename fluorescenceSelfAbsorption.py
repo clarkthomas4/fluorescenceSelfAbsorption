@@ -5,7 +5,7 @@ from scipy import math
 import cv2
 import json
 from TomopyReconstructionForFluorescenceTest import tomography, getDataPath
-from materialsData import getElementData
+import materialsData as mD
 
 # Solve python2/3 (raw_)input compatibility issue
 try:
@@ -24,6 +24,7 @@ class jsonDataFile():
         return self.data
 
 # NOTE Code only handles a single peak per material
+# TODO Write some unit tests!!
 
 
 class scan():
@@ -31,7 +32,7 @@ class scan():
         self._data = scanData.getData()
 
         self._absorptionTomo = self._data["absorptionTomo"]["path"]
-        self._listOfMaterials = self._createMatList()
+        self._listOfMaterials = self._listMaterials()
         self._listOfMaterials = self._loadMassAttenuationCoefficients(
                                         self._listOfMaterials)
         self._outDir = self._data["outputFolder"]["path"]
@@ -55,6 +56,15 @@ class scan():
     def printData(self):
         print(self._data)
 
+    def _listMaterials(self):
+        matList = []
+        for i in range(len(self._data["materials"]["name"])):
+            newMat = mD.material(self._data["materials"]["name"][i])
+            newMat.setPathToProjections(self._data["materials"]["path"][i])
+            newMat.setPeak(self._data["materials"]["peak"][i])
+            matList.append(newMat)
+        return matList
+
     def getMaterials(self):
         return self._listOfMaterials
 
@@ -67,15 +77,7 @@ class scan():
     def getOutputDir(self):
         return self._outDir
 
-    def _createMatList(self):
-        matList = []
-        for i in range(len(self._data["materials"]["name"])):
-            newMat = material(self._data["materials"]["name"][i])
-            newMat.setPathToProjections(self._data["materials"]["path"][i])
-            newMat.setPeak(self._data["materials"]["peak"][i])
-            matList.append(newMat)
-        return matList
-
+    # TODO replace with method to use materialsData.py
     def _loadMassAttenuationCoefficients(self, listOfMaterials):
         print('loading mass attenuation coefficients...')
 
@@ -96,39 +98,6 @@ class scan():
                     data2[listOfMaterials[i].getName()]["Beam"]
             print('my dictionary', listOfMaterials[i].myDictionary)
         return listOfMaterials
-
-
-class material():
-    def __init__(self, name):
-        self._name = name
-
-    def getName(self):
-        return self._name
-
-    def setPathToProjections(self, path):
-        self._pathToProjections = path
-
-    def getPathToProjections(self):
-        return self._pathToProjections
-
-    def setPeak(self, peak):
-        self._peak = peak
-
-    def getPeak(self):
-        return self._peak
-
-    def getMassAttenCoeff(self, energy):
-        '''
-        returns the mass atten coeff at a specified energy
-        '''
-        self._data = getElementData(self._name)
-        if energy in self._data[:, 0]:
-            row = np.where(self._data[:, 0] == energy)
-            return float(self._data[row, 1])
-        else:
-            print("interpolation required")
-            self._data = np.interp(energy, self._data[:, 0], self._data[:, 1])
-            return self._data
 
 
 class attenuationTable():

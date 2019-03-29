@@ -27,6 +27,39 @@ def getMassAttenCoeff(element, energy):
         return data
 
 
+class material():
+    def __init__(self, name):
+        self._name = name
+
+    def getName(self):
+        return self._name
+
+    def setPathToProjections(self, path):
+        self._pathToProjections = path
+
+    def getPathToProjections(self):
+        return self._pathToProjections
+
+    def setPeak(self, peak):
+        self._peak = peak
+
+    def getPeak(self):
+        return self._peak
+
+    def getMassAttenCoeff(self, energy):
+        '''
+        returns the mass atten coeff at a specified energy
+        '''
+        self._data = getElementData(self._name)
+        if energy in self._data[:, 0]:
+            row = np.where(self._data[:, 0] == energy)
+            return float(self._data[row, 1])
+        else:
+            print("interpolation required")
+            self._data = np.interp(energy, self._data[:, 0], self._data[:, 1])
+            return self._data
+
+
 if __name__ == "__main__":
     print("Cu beam: ", getMassAttenCoeff('Cu', 0.02))
     print("Cu Cu: ", getMassAttenCoeff('Cu', 0.008048))
