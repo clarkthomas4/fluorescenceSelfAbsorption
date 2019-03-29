@@ -11,6 +11,8 @@ class TestMD(unittest.TestCase):
 
     def test_getMAC(self):
         self.assertEqual(mD.getMassAttenCoeff('Cu', 0.02), 33.79)
+        self.assertEqual(round(mD.getMassAttenCoeff('Pt', 0.008048), 3),
+                         196.648)
 
 
 if __name__ == 'main':

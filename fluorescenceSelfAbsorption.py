@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 from scipy import math
 import cv2
 import json
-from TomopyReconstructionForFluorescenceTest import tomography, getDataPath
+from TomopyReconstructionForFluorescenceTest import tomography, getData
 import materialsData as mD
 
 # Solve python2/3 (raw_)input compatibility issue
@@ -20,7 +20,7 @@ class jsonDataFile():
         with open(self.file) as json_data_file:
             self.data = json.load(json_data_file)
 
-    def getData(self):
+    def getJsonData(self):
         return self.data
 
 # NOTE Code only handles a single peak per material
@@ -29,7 +29,7 @@ class jsonDataFile():
 
 class scan():
     def __init__(self, scanData):
-        self._data = scanData.getData()
+        self._data = scanData.getJsonData()
 
         self._absorptionTomo = self._data["absorptionTomo"]["path"]
         self._listOfMaterials = self._listMaterials()
@@ -84,7 +84,7 @@ class scan():
         massAttenuationCoefficients = \
             jsonDataFile("FluorescenceTestParameterFile.json")
 
-        data2 = massAttenuationCoefficients.getData()
+        data2 = massAttenuationCoefficients.getJsonData()
         for i in range(len(listOfMaterials)):
             print('Setting up mass absorption coefficient for ',
                   listOfMaterials[i].getName())
@@ -142,11 +142,6 @@ def AttenuationCorrection(scan, dataFolder, iterations):
     # PtTransmThroughCu=0.995
     # PtTransmThroughPt=0.996
 
-    contLoop, pathTot = getDataPath(scan.getAbsorptionTomo(), dataFolder)
-    if (contLoop):
-        print('database "', dataFolder, '" not found!')
-        return
-
     tomoMerlin = np.zeros((1, 25, 25))
     tomoMerlin = tomography(scan.getAbsorptionTomo(), 'data', 12, 0)
     tomoMerlin[0, 1:25, :] = tomoMerlin[0, 0:24, :]
@@ -166,12 +161,10 @@ def AttenuationCorrection(scan, dataFolder, iterations):
             listOfMaterials[i].getName(),
             listOfMaterials[i].getPathToProjections())
         print('path to projections', listOfMaterials[i].getPathToProjections())
-        mypathTemp = h5py.File(temp.path, 'r')
-        contLoop, pathTot = getDataPath(temp.path, dataFolder)
-        print(contLoop)
+        data = getData(temp.path, dataFolder)
         try:
-            print(np.shape(np.array(mypathTemp[str(pathTot)])))
-            temp.set_projection(np.array(mypathTemp[str(pathTot)]))
+            print(np.shape(np.array(data)))
+            temp.set_projection(np.array(data))
             print('set_projection')
             materialsAnalysis.append(temp)
             print('appended')

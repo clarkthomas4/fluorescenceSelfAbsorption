@@ -22,7 +22,6 @@ def getMassAttenCoeff(element, energy):
         row = np.where(data[:, 0] == energy)
         return float(data[row, 1])
     else:
-        print("interpolation required")
         data = np.interp(energy, data[:, 0], data[:, 1])
         return data
 
@@ -55,7 +54,6 @@ class material():
             row = np.where(self._data[:, 0] == energy)
             return float(self._data[row, 1])
         else:
-            print("interpolation required")
             self._data = np.interp(energy, self._data[:, 0], self._data[:, 1])
             return self._data
 

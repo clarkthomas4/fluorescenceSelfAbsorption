@@ -6,7 +6,7 @@ class TestFSA(unittest.TestCase):
 
     def test_scan(self):
         scanDataFile = fSA.jsonDataFile("ScanData.json")
-        scanData = scanDataFile.getData()
+        scanData = scanDataFile.getJsonData()
         scan = fSA.scan(scanDataFile)
         self.assertEqual(scan.getAbsorptionTomo(),
                          scanData["absorptionTomo"]["path"])
