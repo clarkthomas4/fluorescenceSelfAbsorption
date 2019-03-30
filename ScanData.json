@@ -4,20 +4,21 @@
 		"path":["data/Cu21082018.hdf","data/Pt21082018.hdf"],
 		"peak":[0.008048,0.009439]
 	},
-	"outputFolder":{
-		"path":"data/output/"
-	},
 	"absorptionTomo":{
 		"path":"data/Absorption.hdf"
 	},
-    "scanParameters":{
-        "width":25,
-        "height":1,
-        "depthProjections":25,
-        "tomoCentre":13,
-        "minFluoSignal":10,
-        "projShift":1,
-        "pixelSize":10.0e-4,
-				"beamEnergy":0.02
-  }
-}
+  "scanParameters":{
+    "width":25,
+    "height":1,
+    "depthProjections":25,
+    "tomoCentre":13,
+    "minFluoSignal":10,
+    "projShift":1,
+    "pixelSize":10.0e-4,
+		"beamEnergy":0.02
+  },
+	"outputFolder":{
+		"path":"data/output/"
+	},
+	"dataFolder":"data"
+},

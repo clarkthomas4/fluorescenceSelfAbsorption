@@ -8,7 +8,8 @@ import numpy as np
 class absorptionTomo():
     def __init__(self, scan):
         self._tomoMerlin = np.zeros((1, 25, 25))  # REVIEW Check if needed
-        self._tomoMerlin = tomography(scan.getAbsorptionTomo(), 'data', 12, 0)
+        self._tomoMerlin = tomography(scan.getAbsorptionProjections(),
+                                      scan.getDataFolder(), 12, 0)
         self._tomoMerlin[0, 1:25, :] = self._tomoMerlin[0, 0:24, :]
 
     def getAbsorptionTomo(self):
@@ -121,24 +122,3 @@ def getData(h5File, dataFolder):
         print('database "', dataFolder, '" found in  ', pathTot)
         data = myPath[str(pathTot)]
         return data
-
-
-# For testing function
-if __name__ == "__main__":
-    # pathToNexustomoData='/dls/i13-1/data/2017/cm16785-1/processing/merlinTomo/merlinProjections.hdf'
-    pathToNexustomoData = ('/dls/i13-1/data/2017/cm16785-1/processing/Vortex'
-                           'Tomo/vortexProjectionsPtAttenuation0103.hdf')
-    centre = 23
-    # width=
-
-    # missing projections
-    # mypath=h5py.File(nxsfileName,'r')
-    # name='C:\\Users\\xfz42935\\Documents\\Alignement\\pco1-63429.hdf'
-    '''
-    findContour(<pathToNexusFile>,<nameOfTheEntry>,minimumEnergy,MaximumEnergy,xLenghtOfPtychoScan,yLenghtofPtychoScan)
-    nameofTheEntry is 'fullSpectrum' for vortex, PCO or Merlin is 'data'
-    '''
-    img = tomography(pathToNexustomoData, 'data', centre)
-    # plt.imshow(img[1,:,:])
-    # plt.show()
-    # findContour(pathToNexus,'fullSpectrum',9.3,9.6,86,10)

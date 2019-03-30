@@ -32,11 +32,14 @@ class scan():
     def __init__(self, scanData):
         self._data = scanData.getJsonData()
 
-        self._absorptionTomo = self._data["absorptionTomo"]["path"]
+        self._absorptionProjections = self._data["absorptionTomo"]["path"]
+        self._absorptionTomo()
+
         self._listOfMaterials = self._listMaterials()
         self._listOfMaterials = self._loadMassAttenuationCoefficients(
                                         self._listOfMaterials)
         self._outDir = self._data["outputFolder"]["path"]
+        self._dataFolder = self._data["dataFolder"]
 
         self._scanParameters = {}
         self._scanParameters["width"] = self._data["scanParameters"]["width"]
@@ -57,6 +60,27 @@ class scan():
     def printData(self):
         print(self._data)
 
+    def getAbsorptionTomo(self):
+        return self._absorptionTomo
+
+    def getMaterials(self):
+        return self._listOfMaterials
+
+    def getAbsorptionProjections(self):
+        return self._absorptionProjections
+
+    def getScanParams(self):
+        return self._scanParameters
+
+    def getOutputDir(self):
+        return self._outDir
+
+    def getDataFolder(self):
+        return self._dataFolder
+
+    def _absorptionTomo(self):
+        self._absorptionTomo = absorptionTomo(self).getAbsorptionTomo()
+
     def _listMaterials(self):
         matList = []
         for i in range(len(self._data["materials"]["name"])):
@@ -65,18 +89,6 @@ class scan():
             newMat.setPeak(self._data["materials"]["peak"][i])
             matList.append(newMat)
         return matList
-
-    def getMaterials(self):
-        return self._listOfMaterials
-
-    def getAbsorptionTomo(self):
-        return self._absorptionTomo
-
-    def getScanParams(self):
-        return self._scanParameters
-
-    def getOutputDir(self):
-        return self._outDir
 
     # TODO replace with method to use materialsData.py
     def _loadMassAttenuationCoefficients(self, listOfMaterials):
@@ -155,7 +167,7 @@ def loadMaterialTomos(nMaterials, listOfMaterials, dataFolder, tomoCentre):
     return materialsAnalysis
 
 
-def AttenuationCorrection(scan, dataFolder, iterations):
+def AttenuationCorrection(scan, iterations):
 
     listOfMaterials = scan.getMaterials()
     nMaterials = len(listOfMaterials)
@@ -176,18 +188,14 @@ def AttenuationCorrection(scan, dataFolder, iterations):
     # PtTransmThroughCu=0.995
     # PtTransmThroughPt=0.996
 
-    tomoMerlin = absorptionTomo(scan)
-    print('absorption tomo done', np.shape(tomoMerlin))
-    plt.imshow(tomoMerlin.getAbsorptionTomo()[0, :, :])
+    tomoMerlin = scan.getAbsorptionTomo()
+    print("Showing first slice of absorption tomo")
+    plt.imshow(tomoMerlin[0, :, :])
     plt.show()
 
     materialsAnalysis = loadMaterialTomos(nMaterials, listOfMaterials,
-                                          dataFolder, tomoCentre)
+                                          scan.getDataFolder(), tomoCentre)
 
-    '''
-    STEP 1:
-    do the tomography with the acquired sinograms
-    '''
     testIteration = 0
     NewMaterials = [None] * nMaterials
     MaterialsCorrection = [None] * nMaterials
@@ -211,7 +219,8 @@ def AttenuationCorrection(scan, dataFolder, iterations):
                 materialsAnalysis[nMat].projection)
             vortexImPtCorr[nMat] = h5py.File(nameTomoMaterial, "w")
             dsetImagePtCorr[nMat] = vortexImPtCorr[nMat].create_dataset(
-                'data', (iterations+1, height, width, width), 'f')
+                scan.getDataFolder(),
+                (iterations+1, height, width, width), 'f')
             dsetOscillation[nMat] = vortexImPtCorr[nMat].create_dataset(
                 'oscillation', (iterations+1,), 'f')
 
@@ -227,7 +236,7 @@ def AttenuationCorrection(scan, dataFolder, iterations):
 
         testIteration += 1
         print('iteration', testIteration)
-        npdataMerlin = np.array(tomoMerlin.getAbsorptionTomo())
+        npdataMerlin = np.array(tomoMerlin)
         # a,b,c=np.shape(npdataMerlin)
         nAngles = 0
         height = 0
@@ -531,13 +540,14 @@ def AttenuationCorrection(scan, dataFolder, iterations):
                 listOfMaterials[nMat].getName() + "21082018V3.hdf"
             vortexImPt = h5py.File(nameMat, "w")
             dsetImagePt = vortexImPt.create_dataset(
-                'data', (nAngles, height, width), 'f')
+                scan.getDataFolder(), (nAngles, height, width), 'f')
             dsetImagePt[...] = NewMaterials[nMat]  # /myMax
             vortexImPt.close()
             listOfMaterials[nMat].path = nameMat
             # listOfMaterials[nMat].setPathToProjections(nameMat)
             print('processing the new tomography')
-            tomoNew[nMat] = tomography(nameMat, 'data', tomoCentre, 1)
+            tomoNew[nMat] = tomography(nameMat, scan.getDataFolder(),
+                                       tomoCentre, 1)
             plt.figure(1)
             plt.imshow(materialsAnalysis[nMat].tomo[0, :, :])
 
@@ -560,4 +570,4 @@ if __name__ == "__main__":
     nIterations = 5
     scan = scan(scanData)
 
-    AttenuationCorrection(scan, 'data', nIterations)
+    AttenuationCorrection(scan, nIterations)
