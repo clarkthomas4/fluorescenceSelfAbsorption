@@ -8,7 +8,7 @@ class TestFSA(unittest.TestCase):
         scanDataFile = fSA.jsonDataFile("ScanData.json")
         scanData = scanDataFile.getJsonData()
         scan = fSA.scan(scanDataFile)
-        self.assertEqual(scan.getAbsorptionTomo(),
+        self.assertEqual(scan.getAbsorptionProjections(),
                          scanData["absorptionTomo"]["path"])
 
 
