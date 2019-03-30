@@ -31,6 +31,7 @@ class jsonDataFile():
 class scan():
     def __init__(self, scanData):
         self._data = scanData.getJsonData()
+        self._dataFolder = self._data["dataFolder"]
 
         self._absorptionProjections = self._data["absorptionTomo"]["path"]
         self._absorptionTomo()
@@ -39,7 +40,6 @@ class scan():
         self._listOfMaterials = self._loadMassAttenuationCoefficients(
                                         self._listOfMaterials)
         self._outDir = self._data["outputFolder"]["path"]
-        self._dataFolder = self._data["dataFolder"]
 
         self._scanParameters = {}
         self._scanParameters["width"] = self._data["scanParameters"]["width"]

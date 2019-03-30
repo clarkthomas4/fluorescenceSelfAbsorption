@@ -20,5 +20,5 @@
 	"outputFolder":{
 		"path":"data/output/"
 	},
-	"dataFolder":"data"
-},
+	"dataFolder": "data"
+}
