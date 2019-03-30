@@ -2,7 +2,7 @@
 An iterative self-absorption correction algorithm for 3D ptycho-fluorescence imaging
 
 [![Build Status](https://travis-ci.org/clarkthomas4/fluorescenceSelfAbsorption.svg?master)](https://travis-ci.org/clarkthomas4/fluorescenceSelfAbsorption)
-[![Coverage Status](https://coveralls.io/repos/github/clarkthomas4/fluorescenceSelfAbsorption/badge.svg)](https://coveralls.io/github/clarkthomas4/fluorescenceSelfAbsorption)
+[![Coverage Status](https://coveralls.io/repos/github/clarkthomas4/fluorescenceSelfAbsorption/badge.svg?branch=master)](https://coveralls.io/github/clarkthomas4/fluorescenceSelfAbsorption)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 ___
 
