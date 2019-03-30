@@ -5,6 +5,16 @@ import numpy as np
 # from scipy import math
 
 
+class absorptionTomo():
+    def __init__(self, scan):
+        self._tomoMerlin = np.zeros((1, 25, 25))  # REVIEW Check if needed
+        self._tomoMerlin = tomography(scan.getAbsorptionTomo(), 'data', 12, 0)
+        self._tomoMerlin[0, 1:25, :] = self._tomoMerlin[0, 0:24, :]
+
+    def getAbsorptionTomo(self):
+        return self._tomoMerlin
+
+
 def tomography(nxsfileName, dataFolder, centre, index):
     theta = tomopy.angles(25, 0, 180)
     # print('angles', theta)
@@ -63,6 +73,7 @@ def tomography(nxsfileName, dataFolder, centre, index):
     return rec
 
 
+# TODO put myRec somwhere "private"?
 def myRec(obj, continueLoop, pathTot, dataFolder):
     '''
     recursive function to look for the data database

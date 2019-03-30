@@ -4,7 +4,8 @@ from matplotlib import pyplot as plt
 from scipy import math
 import cv2
 import json
-from TomopyReconstructionForFluorescenceTest import tomography, getData
+from TomopyReconstructionForFluorescenceTest import absorptionTomo,\
+                                                    tomography, getData
 import materialsData as mD
 
 # Solve python2/3 (raw_)input compatibility issue
@@ -121,40 +122,11 @@ class materialProjectionsTomo():
         self.tomo = tomo
 
 
-def AttenuationCorrection(scan, dataFolder, iterations):
-
-    listOfMaterials = scan.getMaterials()
-    nMaterials = len(listOfMaterials)
-
-    scanParams = scan.getScanParams()
-    tomoCentre = scanParams["tomoCentre"]
-    minFluoSignal = scanParams["minFluoSignal"]
-    projShift = scanParams["projShift"]
-    pixelSize = scanParams["pixelSize"]
-
-    '''
-    trasmission through a pixel calculated from the transmission measured with
-    the  Merlin: the effective density of Pt is found to be 1g/cm^3,
-    for Cu 0.8g/cm^3
-    '''
-    # CuTransmThroughCu=0.999
-    # CuTransmThroughPt=0.9951
-    # PtTransmThroughCu=0.995
-    # PtTransmThroughPt=0.996
-
-    tomoMerlin = np.zeros((1, 25, 25))
-    tomoMerlin = tomography(scan.getAbsorptionTomo(), 'data', 12, 0)
-    tomoMerlin[0, 1:25, :] = tomoMerlin[0, 0:24, :]
-    print('absorption tomo done', np.shape(tomoMerlin))
-    plt.imshow(tomoMerlin[0, :, :])
-    plt.show()
-    input('Press Enter to continue...')
-
+def loadMaterialTomos(nMaterials, listOfMaterials, dataFolder, tomoCentre):
     print('loading materials')
     print(nMaterials)
     materialsAnalysis = []
     print('loading data...')
-
     for i in range(nMaterials):
         print('Im happy here')
         temp = materialProjectionsTomo(
@@ -180,6 +152,37 @@ def AttenuationCorrection(scan, dataFolder, iterations):
             print("KeyError thrown: incorrect path to data")
             print(dataFolder, listOfMaterials[i].getPathToProjections(),
                   'not found! closing uffa')
+    return materialsAnalysis
+
+
+def AttenuationCorrection(scan, dataFolder, iterations):
+
+    listOfMaterials = scan.getMaterials()
+    nMaterials = len(listOfMaterials)
+
+    scanParams = scan.getScanParams()
+    tomoCentre = scanParams["tomoCentre"]
+    minFluoSignal = scanParams["minFluoSignal"]
+    projShift = scanParams["projShift"]
+    pixelSize = scanParams["pixelSize"]
+
+    '''
+    trasmission through a pixel calculated from the transmission measured with
+    the  Merlin: the effective density of Pt is found to be 1g/cm^3,
+    for Cu 0.8g/cm^3
+    '''
+    # CuTransmThroughCu=0.999
+    # CuTransmThroughPt=0.9951
+    # PtTransmThroughCu=0.995
+    # PtTransmThroughPt=0.996
+
+    tomoMerlin = absorptionTomo(scan)
+    print('absorption tomo done', np.shape(tomoMerlin))
+    plt.imshow(tomoMerlin.getAbsorptionTomo()[0, :, :])
+    plt.show()
+
+    materialsAnalysis = loadMaterialTomos(nMaterials, listOfMaterials,
+                                          dataFolder, tomoCentre)
 
     '''
     STEP 1:
@@ -224,7 +227,7 @@ def AttenuationCorrection(scan, dataFolder, iterations):
 
         testIteration += 1
         print('iteration', testIteration)
-        npdataMerlin = np.array(tomoMerlin)
+        npdataMerlin = np.array(tomoMerlin.getAbsorptionTomo())
         # a,b,c=np.shape(npdataMerlin)
         nAngles = 0
         height = 0
